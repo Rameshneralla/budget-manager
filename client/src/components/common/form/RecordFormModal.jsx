@@ -18,6 +18,11 @@ import { validateFields } from '../../../utils/validation';
 
 const FULL_WIDTH_TYPES = ['textarea'];
 
+/** One column on phones, two on tablets, three on laptops and wider. */
+function columnSizes(field) {
+  return FULL_WIDTH_TYPES.includes(field.type) ? { md: 12 } : { md: 6, lg: 4 };
+}
+
 function focusField(name) {
   document.getElementById(`field-${name}`)?.focus();
 }
@@ -56,23 +61,24 @@ export default function RecordFormModal({ show, title, fields, initialValues, on
     <Modal
       show={show}
       onHide={isSaving ? undefined : onHide}
-      size="lg"
+      size="xl"
       centered
       scrollable
       backdrop="static"
       aria-labelledby="record-form-title"
     >
-      <Form noValidate onSubmit={handleSubmit}>
+      {/* record-form keeps the header and footer fixed while only the fields scroll. */}
+      <Form noValidate onSubmit={handleSubmit} className="record-form">
         <Modal.Header closeButton={!isSaving}>
           <Modal.Title id="record-form-title">{title}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <p className="form-text mt-0 mb-3">
+          <p className="form-text mt-0 mb-2">
             Fields marked <span className="required-mark">*</span> are required.
           </p>
-          <Row className="g-3">
+          <Row className="gx-3 gy-2">
             {fields.map((field) => (
-              <Col key={field.name} xs={12} md={FULL_WIDTH_TYPES.includes(field.type) ? 12 : 6}>
+              <Col key={field.name} xs={12} {...columnSizes(field)}>
                 <FormField
                   field={field}
                   value={values[field.name] ?? ''}

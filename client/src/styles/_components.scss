@@ -82,7 +82,7 @@
 .modal-header,
 .modal-footer {
   border-color: var(--app-border);
-  padding: $space-4 $space-5;
+  padding: $space-3 $space-5;
 
   @include media-down(sm) {
     padding: $space-3 $space-4;
@@ -90,10 +90,10 @@
 }
 
 .modal-body {
-  padding: $space-4 $space-5;
+  padding: $space-3 $space-5 $space-4;
 
   @include media-down(sm) {
-    padding: $space-4;
+    padding: $space-3 $space-4;
   }
 }
 
@@ -222,5 +222,29 @@
     .notice__icon {
       color: var(--app-primary);
     }
+  }
+}
+
+// The add/edit form wraps the modal header, body and footer. Making it a flex
+// column restores Bootstrap's scrollable-modal behaviour: header and footer
+// (Save / Cancel) stay visible and only the fields scroll on short screens.
+.record-form {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+
+  .modal-body {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .form-label {
+    margin-bottom: 0.2rem;
+    font-size: $font-size-xs;
+  }
+
+  .form-text {
+    font-size: $font-size-xs;
   }
 }

@@ -16,7 +16,8 @@
 
 .form-control,
 .form-select {
-  min-height: $touch-target;
+  min-height: $control-height;
+  padding-block: 0.3rem;
   border-color: var(--app-border-strong);
   background-color: var(--app-surface);
   color: var(--app-text);
@@ -29,6 +30,10 @@
 
   &::placeholder {
     color: var(--app-text-muted);
+  }
+
+  @include media-down(md) {
+    min-height: $touch-target;
   }
 }
 

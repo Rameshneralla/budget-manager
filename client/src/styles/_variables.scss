@@ -14,12 +14,12 @@ $font-family-base:
   'Helvetica Neue',
   Arial,
   sans-serif;
-$font-size-xs: 0.75rem;
-$font-size-sm: 0.8125rem;
-$font-size-base: 0.9375rem;
-$font-size-lg: 1.125rem;
-$font-size-xl: 1.5rem;
-$font-size-hero: 1.875rem;
+$font-size-xs: 0.6875rem; // 11px
+$font-size-sm: 0.78125rem; // 12.5px
+$font-size-base: 0.875rem; // 14px
+$font-size-lg: 1rem;
+$font-size-xl: 1.375rem;
+$font-size-hero: 1.625rem;
 $font-weight-medium: 500;
 $font-weight-semibold: 600;
 $font-weight-bold: 700;
@@ -43,6 +43,8 @@ $radius-pill: 999px;
 // Layout
 $content-max-width: 1440px;
 $header-height: 4rem;
+// Inputs and buttons: compact on desktop, larger touch targets on phones/tablets.
+$control-height: 2.125rem;
 $touch-target: 2.5rem;
 
 // Breakpoints (match Bootstrap 5)

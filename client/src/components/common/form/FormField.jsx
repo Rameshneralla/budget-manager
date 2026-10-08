@@ -7,7 +7,7 @@
 import Form from 'react-bootstrap/Form';
 import InputGroup from 'react-bootstrap/InputGroup';
 
-const TEXTAREA_ROWS = 3;
+const TEXTAREA_ROWS = 2;
 
 function FieldControl({ field, value, onChange, isInvalid, describedBy }) {
   const common = {
