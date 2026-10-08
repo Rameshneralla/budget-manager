@@ -4,7 +4,8 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Spinner from 'react-bootstrap/Spinner';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { FiEye, FiEyeOff, FiLock, FiPieChart } from 'react-icons/fi';
+import { FiEye, FiEyeOff, FiLock } from 'react-icons/fi';
+import RbmLogo from '../components/common/RbmLogo';
 import ThemeToggle from '../components/common/ThemeToggle';
 import { APP_NAME, DEFAULT_OWNER_NAME } from '../constants';
 
@@ -37,9 +38,7 @@ export default function LoginPage({ onLogin, sessionExpired }) {
       </div>
       <section className="login-card" aria-labelledby="login-title">
         <div className="app-brand login-card__brand">
-          <span className="app-brand__logo" aria-hidden="true">
-            <FiPieChart />
-          </span>
+          <RbmLogo size={36} className="app-brand__logo" />
           <span className="app-brand__text">
             <span className="app-brand__name">{DEFAULT_OWNER_NAME}</span>
             <span className="app-brand__tagline">{APP_NAME}</span>

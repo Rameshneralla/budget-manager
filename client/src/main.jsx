@@ -8,7 +8,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/main.scss';
 
 import './utils/chartSetup';
+import { registerServiceWorker, startInstallSupport } from './pwa/installApp';
 import App from './App';
+
+// Installable app: listen for the browser install event before React renders.
+startInstallSupport();
+registerServiceWorker();
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -8,6 +8,7 @@ module.exports = [
   // Backend (CommonJS, Node)
   {
     files: ['server/**/*.js', 'scripts/**/*.js', 'eslint.config.js'],
+    ignores: ['scripts/**/*.mjs'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'commonjs',
@@ -40,6 +41,19 @@ module.exports = [
         { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^(_|[A-Z])' },
       ],
     },
+  },
+
+  // Node ES-module scripts (e.g. scripts/generate-icons.mjs)
+  {
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: globals.node },
+    rules: { ...js.configs.recommended.rules },
+  },
+
+  // Service worker
+  {
+    files: ['client/public/sw.js'],
+    languageOptions: { globals: globals.serviceworker },
   },
 
   // Vite config runs in Node.

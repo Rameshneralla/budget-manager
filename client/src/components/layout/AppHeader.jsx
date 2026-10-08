@@ -11,12 +11,13 @@ import {
   FiCalendar,
   FiGrid,
   FiLogOut,
-  FiPieChart,
   FiSettings,
   FiTrendingDown,
   FiTrendingUp,
 } from 'react-icons/fi';
+import RbmLogo from '../common/RbmLogo';
 import ThemeToggle from '../common/ThemeToggle';
+import InstallApp from '../common/InstallApp';
 import { useBudget } from '../../context/BudgetContext';
 import { useAuth } from '../../context/AuthContext';
 import { APP_NAME, DEFAULT_OWNER_NAME, ROUTES } from '../../constants';
@@ -41,9 +42,7 @@ export default function AppHeader() {
     <header className="app-header">
       <Navbar expand="lg" expanded={isMenuOpen} onToggle={setIsMenuOpen} className="app-container">
         <Link to={ROUTES.DASHBOARD} className="app-brand me-3" onClick={() => setIsMenuOpen(false)}>
-          <span className="app-brand__logo" aria-hidden="true">
-            <FiPieChart />
-          </span>
+          <RbmLogo size={36} className="app-brand__logo" />
           <span className="app-brand__text">
             <span className="app-brand__name">{ownerName}</span>
             <span className="app-brand__tagline">{appTitle}</span>
@@ -78,6 +77,7 @@ export default function AppHeader() {
                 {formatMonthLabel(selectedMonth)}
               </span>
             )}
+            <InstallApp />
             <ThemeToggle />
             {authRequired && (
               <button

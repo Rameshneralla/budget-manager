@@ -1,14 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- RBM round logo (Ramesh Budget Manager). Source for the app icons - see README "App icon". -->
+  <!-- Full-bleed variant: Android crops it to the phone's icon shape; iOS uses it as-is.
+       Everything important stays inside the central 80% "safe zone". -->
   <defs>
     <linearGradient id="rbm-fill" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#3d6ef2"/>
       <stop offset="1" stop-color="#173da8"/>
     </linearGradient>
   </defs>
-  <circle cx="256" cy="256" r="250" fill="url(#rbm-fill)"/>
-  <circle cx="256" cy="256" r="212" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="10"/>
+  <rect width="512" height="512" fill="url(#rbm-fill)"/>
+  <circle cx="256" cy="256" r="170" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="9"/>
   <text x="256" y="256" dy="0.35em" text-anchor="middle" fill="#ffffff"
         font-family="'Segoe UI', 'Inter Variable', Inter, Arial, sans-serif" font-weight="800"
-        font-size="148" letter-spacing="2">RBM</text>
+        font-size="118" letter-spacing="2">RBM</text>
 </svg>

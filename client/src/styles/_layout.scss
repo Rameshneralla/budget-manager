@@ -52,16 +52,10 @@
     color: var(--app-text);
   }
 
+  // The round RBM logo (components/common/RbmLogo.jsx).
   &__logo {
-    display: grid;
-    flex-shrink: 0;
-    place-items: center;
     width: 2.25rem;
     height: 2.25rem;
-    border-radius: $radius-md;
-    background: var(--app-primary);
-    color: #fff;
-    font-size: 1.15rem;
   }
 
   &__text {

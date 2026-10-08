@@ -399,6 +399,25 @@ npm run deploy:pages      # builds client/dist-pages and pushes it to the gh-pag
 
 The first time, enable Pages in GitHub: **Settings › Pages › Build and deployment › Deploy from a branch › `gh-pages` / `(root)`**.
 
+### Install as an app (PWA)
+
+RBM can be installed on phones, tablets and laptops straight from the website, with no Play Store or App Store.
+After installing, it opens in its own window with the round **RBM** icon and works offline.
+
+| Device | How |
+|--------|-----|
+| Android, Windows, macOS, ChromeOS (Chrome, Edge, Samsung Internet) | An **Install RBM app** card appears; or use the ⤓ button in the header |
+| iPhone / iPad (Safari) | The card shows the steps: **Share → Add to Home Screen** (Apple allows no install pop-up) |
+
+Files:
+- `client/public/manifest.webmanifest`: app name, colours and icons.
+- `client/public/sw.js`: service worker, required for installing. It keeps offline copies of the app files; budget data is never cached.
+- `client/src/pwa/installApp.js`, `components/common/InstallApp.jsx`: the install button and card. "Not now" hides the card for 14 days.
+
+**App icon:** the source is `client/icon-source/rbm-logo.svg` (round) and `rbm-logo-maskable.svg` (full-bleed, for Android icon shapes and iOS).
+After editing them, regenerate the PNGs in `client/public/icons` with `node scripts/generate-icons.mjs`. It needs Chrome or Edge; set `CHROME_PATH` if yours isn't found.
+The header logo is the same design (`components/common/RbmLogo.jsx`).
+
 Test the Pages build locally:
 
 ```bash

@@ -1,0 +1,72 @@
+// "Install RBM app" card and the round logo.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.rbm-logo {
+  display: block;
+  flex-shrink: 0;
+}
+
+.install-card {
+  @include surface-card;
+  position: fixed;
+  right: $space-4;
+  bottom: calc(#{$space-4} + env(safe-area-inset-bottom));
+  z-index: 1045; // above page content, below modals (1050)
+  display: flex;
+  gap: $space-3;
+  align-items: flex-start;
+  width: min(24rem, calc(100vw - #{$space-6}));
+  padding: $space-4;
+  box-shadow: var(--app-shadow-lg);
+
+  @include media-down(sm) {
+    right: $space-3;
+    left: $space-3;
+    width: auto;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__text {
+    margin: $space-1 0 $space-3;
+    color: var(--app-text-secondary);
+    font-size: $font-size-sm;
+  }
+
+  &__inline-icon {
+    vertical-align: -0.15em;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $space-2;
+  }
+
+  &__close {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: calc(-1 * #{$space-1}) calc(-1 * #{$space-1}) 0 0;
+    padding: 0;
+    border: 0;
+    border-radius: $radius-sm;
+    background: none;
+    color: var(--app-text-muted);
+
+    &:hover {
+      background: var(--app-surface-hover);
+      color: var(--app-text);
+    }
+  }
+}

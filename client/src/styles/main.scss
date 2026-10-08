@@ -14,6 +14,7 @@
 //   _charts      chart containers and breakdown tables
 //   _components  loading/empty/error states, modals, dropdowns, toasts
 //   _login       sign-in screen
+//   _install     install-the-app card, round RBM logo
 //   _responsive  small-screen overrides
 
 @use 'theme';
@@ -27,4 +28,5 @@
 @use 'charts';
 @use 'components';
 @use 'login';
+@use 'install';
 @use 'responsive';
