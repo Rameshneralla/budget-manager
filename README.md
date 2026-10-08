@@ -19,7 +19,7 @@ The React app never reads seed files or keeps budget data in the browser. Every 
   - Expense breakdown by category (donut chart and table)
   - Expected income still to come this month (with a one-click **Received** button), payment-method summary and recent activity
 - **Month dropdown built from the database.** Today it shows only _October 2026_. A month appears as soon as a record is saved in it, and disappears when its last record is deleted.
-- **Due date and actual date** on every income (Due Date + Actual Received Date) and expense (Due Date + Actual Paid Date). The due date decides the month; the actual date fills in automatically when you mark it Received / Paid.
+- **Due date and actual date** on every income (Due Date + Actual Received Date) and expense (Due Date + Actual Paid Date). A record counts in the month the money actually moved: the paid / received date once set, otherwise the due date (e.g. due in August but paid in October = October). The actual date fills in automatically when you mark it Received / Paid.
 - **Income is Expected or Received.** Upcoming income is simply income with status **Expected** (there is no separate Upcoming page). Mark it **Received** on the Income page or the dashboard when the money arrives; every total updates straight away.
 - **Sync across devices** (GitHub Pages version): your laptop, phone and tablet share the same data through your own private GitHub repository.
 - **Income and Expenses pages**, each with:
@@ -171,7 +171,7 @@ npm run seed:reset    # REPLACE all budget data with the seed data
 | `audit_logs`      | Created / Updated / Status Changed / Deleted / Imported history                                                                                                                                           |
 
 - Money is stored as **integer paise**, so totals are exact. The API always works in rupees.
-- Dates are `YYYY-MM-DD`; months are `YYYY-MM`. A record belongs to the month of its **due date**.
+- Dates are `YYYY-MM-DD`; months are `YYYY-MM`. A record belongs to the month of its **paid / received date** when set, otherwise its **due date** (`budgetMonthKey` in `server/src/utils/dates.js`). Changing the status or the actual date can therefore move a record to another month; migration `004_month_follows_actual_date.sql` applied this to existing records.
 - **Actual dates follow the status.** The Received / Paid date can only be set when the status is Received (income) or Paid/Closed (expense). Changing the status from the badge or bulk actions fills it with today, or clears it.
 - **Upcoming income = income with status Expected.** Migration `003_expected_income_replaces_upcoming.sql` turned income _Pending_ into _Expected_ and moved the old `upcoming_income` rows into `income`. Rows already in Income were skipped: linked ones, and ones with the same month, source and amount as one income record or as all of them together.
 - Every table has `created_at`, and record tables have `updated_at`, which changes on every edit or status change.
@@ -282,7 +282,7 @@ curl -X PATCH -H "Content-Type: application/json" -d '{"status":"Received"}' htt
 ## 9. Testing
 
 ```bash
-npm test        # API + login tests against an in-memory database (28 tests)
+npm test        # API + login tests against an in-memory database (30 tests)
 npm run lint    # ESLint for server and client
 npm run format  # Prettier
 ```
@@ -295,6 +295,7 @@ The tests cover:
 - validation errors
 - months appearing and disappearing
 - expense Paid → Pending → Closed
+- records counted in the month they were paid / received (due August, paid October = October)
 - bulk status and bulk delete
 - expected income bulk-marked Received and back
 - export/import round trip, importing older files (upcoming income → Expected income), rejected imports, the audit trail and JSON errors

@@ -137,7 +137,8 @@ export function useIncomeConfig() {
           name: 'receivedDate',
           label: 'Actual Received Date',
           type: 'date',
-          helpText: 'When the money arrived. Filled in automatically when marked Received.',
+          helpText:
+            'When the money arrived (today when marked Received). The income counts in this month.',
           validate: onlyWithStatus([RECEIVED_STATUS], 'Actual received date'),
         },
         {

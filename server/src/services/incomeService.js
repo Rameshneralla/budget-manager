@@ -3,7 +3,7 @@ const createRecordService = require('./createRecordService');
 const incomeRepository = require('../repositories/incomeRepository');
 const { validateIncomeInput } = require('../validators/incomeValidator');
 const { assertPaymentMethodExists } = require('./referenceChecks');
-const { monthKeyFromDate, todayIsoDate } = require('../utils/dates');
+const { budgetMonthKey, todayIsoDate } = require('../utils/dates');
 const { ENTITY_TYPES, INCOME_STATUSES, INCOME_RECEIVED_STATUS } = require('../constants');
 
 /**
@@ -23,8 +23,8 @@ const incomeService = createRecordService({
   repository: incomeRepository,
   validateInput: validateIncomeInput,
   statuses: INCOME_STATUSES,
-  // The budget month is the month the income is due in.
-  getMonthKey: (income) => monthKeyFromDate(income.dueDate),
+  // Counted in the month it was received; until then, the month it is due.
+  getMonthKey: (income) => budgetMonthKey(income.receivedDate, income.dueDate),
   describe: (income) => income.source,
   checkReferences: (income) => {
     if (income.paymentMethodId) {

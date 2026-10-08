@@ -202,7 +202,8 @@ export function useExpenseConfig() {
           name: 'paidDate',
           label: 'Actual Paid Date',
           type: 'date',
-          helpText: 'When it was paid. Filled in automatically when marked Paid.',
+          helpText:
+            'When it was paid (today when marked Paid). The expense counts in this month, e.g. due in August but paid in October = October.',
           validate: onlyWithStatus(SETTLED_STATUSES, 'Actual paid date'),
         },
         {

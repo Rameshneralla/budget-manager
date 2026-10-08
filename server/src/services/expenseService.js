@@ -3,7 +3,7 @@ const createRecordService = require('./createRecordService');
 const expenseRepository = require('../repositories/expenseRepository');
 const { validateExpenseInput } = require('../validators/expenseValidator');
 const { assertCategoryExists, assertPaymentMethodExists } = require('./referenceChecks');
-const { monthKeyFromDate, todayIsoDate } = require('../utils/dates');
+const { budgetMonthKey, todayIsoDate } = require('../utils/dates');
 const {
   ENTITY_TYPES,
   EXPENSE_STATUSES,
@@ -31,8 +31,8 @@ const expenseService = createRecordService({
   repository: expenseRepository,
   validateInput: validateExpenseInput,
   statuses: EXPENSE_STATUSES,
-  // The budget month is the month the expense is due in.
-  getMonthKey: (expense) => monthKeyFromDate(expense.dueDate),
+  // Counted in the month it was paid; until then, the month it is due.
+  getMonthKey: (expense) => budgetMonthKey(expense.paidDate, expense.dueDate),
   describe: (expense) =>
     expense.purpose ? `${expense.payee} - ${expense.purpose}` : expense.payee,
   checkReferences: (expense) => {

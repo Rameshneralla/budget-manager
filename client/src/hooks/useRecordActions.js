@@ -8,7 +8,7 @@
 import { useCallback, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { useBudget } from '../context/BudgetContext';
-import { pluralize } from '../utils/formatters';
+import { formatMonthLabel, pluralize } from '../utils/formatters';
 
 /**
  * @param {object}   service       from services/createRecordService.js
@@ -17,7 +17,7 @@ import { pluralize } from '../utils/formatters';
  * @param {Function} labels.describe   (record) => 'House Rent'
  */
 export function useRecordActions(service, { singular, describe }) {
-  const { notifyDataChanged } = useBudget();
+  const { notifyDataChanged, selectedMonth } = useBudget();
 
   const run = useCallback(
     async (action, successMessage, failureMessage) => {
@@ -26,6 +26,11 @@ export function useRecordActions(service, { singular, describe }) {
         toast.success(
           typeof successMessage === 'function' ? successMessage(result) : successMessage
         );
+        // Records count in the month they were paid / received (else the due month),
+        // so a save can move one to another month.
+        if (result?.month && selectedMonth && result.month !== selectedMonth) {
+          toast.info(`${describe(result)} now appears under ${formatMonthLabel(result.month)}.`);
+        }
         notifyDataChanged();
         return result;
       } catch (error) {
@@ -33,7 +38,7 @@ export function useRecordActions(service, { singular, describe }) {
         throw error;
       }
     },
-    [notifyDataChanged]
+    [notifyDataChanged, selectedMonth, describe]
   );
 
   return useMemo(

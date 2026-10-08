@@ -87,10 +87,16 @@ function createRecordService(config) {
     });
   }
 
-  /** Saves a status change (plus any fields applyStatusChange adds) and runs afterWrite. */
+  /**
+   * Saves a status change (plus any fields applyStatusChange adds) and runs afterWrite.
+   * The month is recalculated, because e.g. a paid date can move a record to another month.
+   * Callers remove months left empty (monthRepository.deleteUnused).
+   */
   function saveStatusChange(record, status) {
     const changed = applyStatusChange({ ...record, status }, record);
-    const updated = repository.update(record.id, changed);
+    const month = getMonthKey(changed);
+    monthRepository.ensureExists(month);
+    const updated = repository.update(record.id, { ...changed, month });
     logStatusChange(record, record.status, status);
     afterWrite(updated, record);
     return updated;
@@ -166,6 +172,7 @@ function createRecordService(config) {
           return before;
         }
         saveStatusChange(before, status);
+        monthRepository.deleteUnused();
         return repository.findById(id);
       });
     },
@@ -178,6 +185,7 @@ function createRecordService(config) {
         records
           .filter((record) => record.status !== status)
           .forEach((record) => saveStatusChange(record, status));
+        monthRepository.deleteUnused();
         return { updatedCount: records.length, status };
       });
     },

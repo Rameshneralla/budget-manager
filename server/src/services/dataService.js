@@ -18,7 +18,7 @@ const auditService = require('./auditService');
 const { validateIncomeInput } = require('../validators/incomeValidator');
 const { validateExpenseInput } = require('../validators/expenseValidator');
 const { ValidationError } = require('../utils/errors');
-const { isValidMonthKey, monthKeyFromDate } = require('../utils/dates');
+const { isValidMonthKey, budgetMonthKey } = require('../utils/dates');
 const { rupeesToPaise } = require('../utils/money');
 const { EXPORT_FORMAT, AUDIT_ACTIONS, INCOME_RECEIVED_STATUS } = require('../constants');
 
@@ -271,8 +271,8 @@ function validateImportFile(payload) {
 
 function collectMonthKeys({ months, income, expenses }) {
   const monthKeys = new Set(months);
-  income.forEach((item) => monthKeys.add(monthKeyFromDate(item.dueDate)));
-  expenses.forEach((item) => monthKeys.add(monthKeyFromDate(item.dueDate)));
+  income.forEach((item) => monthKeys.add(budgetMonthKey(item.receivedDate, item.dueDate)));
+  expenses.forEach((item) => monthKeys.add(budgetMonthKey(item.paidDate, item.dueDate)));
   return [...monthKeys].sort();
 }
 
@@ -291,10 +291,10 @@ function importData(payload, { source = 'import file' } = {}) {
 
     monthKeys.forEach((monthKey) => monthRepository.ensureExists(monthKey));
     data.income.forEach((item) =>
-      incomeRepository.create({ ...item, month: monthKeyFromDate(item.dueDate) })
+      incomeRepository.create({ ...item, month: budgetMonthKey(item.receivedDate, item.dueDate) })
     );
     data.expenses.forEach((item) =>
-      expenseRepository.create({ ...item, month: monthKeyFromDate(item.dueDate) })
+      expenseRepository.create({ ...item, month: budgetMonthKey(item.paidDate, item.dueDate) })
     );
 
     const counts = {

@@ -261,6 +261,55 @@ describe('expenses', () => {
     await api('PUT', `/expenses/${internet.id}`, { ...paid.body.data, paidDate: '2026-10-05' });
   });
 
+  it('counts an expense in the month it was paid, not the month it was due', async () => {
+    const totalBefore = (await getSummary()).totalExpenses;
+    const created = await api('POST', '/expenses', {
+      dueDate: '2026-08-20',
+      categoryId: 3,
+      payee: 'Late Bill',
+      amount: 900,
+      expenseType: 'Additional',
+      paymentMethodId: 3,
+      status: 'Pending',
+    });
+    // Not paid yet: it sits in its due month (August).
+    assert.equal(created.body.data.month, '2026-08');
+    assert.deepEqual((await api('GET', '/months')).body.data, ['2026-08', '2026-10']);
+
+    // Paid in October: it moves to October and August disappears.
+    const paid = await api('PUT', `/expenses/${created.body.data.id}`, {
+      ...created.body.data,
+      status: 'Paid',
+      paidDate: '2026-10-03',
+    });
+    assert.equal(paid.body.data.month, '2026-10');
+    assert.equal(paid.body.data.dueDate, '2026-08-20');
+    assert.deepEqual((await api('GET', '/months')).body.data, ['2026-10']);
+    assert.equal((await getSummary()).totalExpenses, totalBefore + 900);
+
+    // Back to Pending (paid date cleared): back to August.
+    const pending = await api('PATCH', `/expenses/${created.body.data.id}/status`, {
+      status: 'Pending',
+    });
+    assert.equal(pending.body.data.month, '2026-08');
+    assert.equal((await getSummary()).totalExpenses, totalBefore);
+
+    await api('DELETE', `/expenses/${created.body.data.id}`);
+    assert.deepEqual((await api('GET', '/months')).body.data, ['2026-10']);
+  });
+
+  it('counts income in the month it was received', async () => {
+    const created = await api('POST', '/income', {
+      dueDate: '2026-09-25',
+      receivedDate: '2026-10-02',
+      source: 'Late Rent',
+      amount: 1200,
+      status: 'Received',
+    });
+    assert.equal(created.body.data.month, '2026-10');
+    await api('DELETE', `/income/${created.body.data.id}`);
+  });
+
   it('requires a valid category and payment method', async () => {
     const { status, body } = await api('POST', '/expenses', {
       dueDate: '2026-10-10',
