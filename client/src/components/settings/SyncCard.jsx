@@ -51,7 +51,8 @@ function SetupSteps() {
           Create an access token <FiExternalLink aria-hidden="true" />
         </a>
         : Repository access → <em>Only select repositories</em> → <code>budget-manager-data</code>;
-        Permissions → <em>Contents: Read and write</em>. Copy the token.
+        Permissions → <em>Add permissions</em> → <em>Contents</em> → <em>Read and write</em>. Copy
+        the token.
       </li>
       <li>Enter it below on each device (laptop, phone, tablet) once.</li>
     </ol>

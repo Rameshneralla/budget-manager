@@ -79,7 +79,7 @@ export async function checkRepository(config) {
     throw new SyncError(
       `Repository "${config.owner}/${config.repo}" was not found, or the token cannot access it. ` +
         `Check the repository exists, then edit the token on GitHub: Repository access → ` +
-        `"Only select repositories" → ${config.repo}, and Contents → "Read and write".`,
+        `"Only select repositories" → ${config.repo}, then Add permissions → Contents → "Read and write".`,
       'not-found'
     );
   }
