@@ -20,7 +20,12 @@ const { validateExpenseInput } = require('../validators/expenseValidator');
 const { ValidationError } = require('../utils/errors');
 const { isValidMonthKey, budgetMonthKey } = require('../utils/dates');
 const { rupeesToPaise } = require('../utils/money');
-const { EXPORT_FORMAT, AUDIT_ACTIONS, INCOME_RECEIVED_STATUS } = require('../constants');
+const {
+  EXPORT_FORMAT,
+  AUDIT_ACTIONS,
+  INCOME_RECEIVED_STATUS,
+  DEFAULT_INCOME_TYPE,
+} = require('../constants');
 
 const MAX_REPORTED_IMPORT_ERRORS = 20;
 
@@ -36,6 +41,7 @@ function exportData() {
     owner: owner ? owner.fullName : null,
     months: monthRepository.findAllKeys(),
     income: incomeRepository.findAll().map((income) => ({
+      incomeType: income.incomeType,
       dueDate: income.dueDate,
       receivedDate: income.receivedDate,
       source: income.source,
@@ -132,6 +138,29 @@ function upgradeDatedItems(items, version) {
   );
 }
 
+/**
+ * Versions 1-3 had no income type: work it out from the source name the same
+ * way migration 005 does ("salary" -> Salary, the word "rent" -> House Rent).
+ */
+function inferIncomeType(source) {
+  const text = ` ${String(source ?? '')
+    .trim()
+    .toLowerCase()} `;
+  if (text.includes('salary')) {
+    return 'Salary';
+  }
+  return text.includes(' rent ') ? 'House Rent' : DEFAULT_INCOME_TYPE;
+}
+
+function upgradeIncomeType(items, version) {
+  if (version >= 4) {
+    return items;
+  }
+  return items.map((item) =>
+    item && typeof item === 'object' ? { incomeType: inferIncomeType(item.source), ...item } : item
+  );
+}
+
 /** Income status "Pending" (versions 1-2) is now "Expected". */
 function upgradeIncomeStatus(items, version) {
   if (version >= 3) {
@@ -220,10 +249,10 @@ function validateImportFile(payload) {
     upgradeDatedItems(asArray(payload.income), payload.version),
     payload.version
   );
-  const rawIncome = [
-    ...fileIncome,
-    ...upcomingToIncome(asArray(payload.upcomingIncome), fileIncome),
-  ];
+  const rawIncome = upgradeIncomeType(
+    [...fileIncome, ...upcomingToIncome(asArray(payload.upcomingIncome), fileIncome)],
+    payload.version
+  );
   const income = rawIncome.map((item, index) => {
     const prefix = `income[${index}]`;
     const paymentMethodId = resolveName(

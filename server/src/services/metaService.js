@@ -4,7 +4,7 @@
  */
 const lookupRepository = require('../repositories/lookupRepository');
 const userRepository = require('../repositories/userRepository');
-const { INCOME_STATUSES, EXPENSE_STATUSES, EXPENSE_TYPES } = require('../constants');
+const { INCOME_STATUSES, EXPENSE_STATUSES, EXPENSE_TYPES, INCOME_TYPES } = require('../constants');
 
 function getMeta() {
   return {
@@ -16,6 +16,7 @@ function getMeta() {
       expense: EXPENSE_STATUSES,
     },
     expenseTypes: EXPENSE_TYPES,
+    incomeTypes: INCOME_TYPES,
   };
 }
 

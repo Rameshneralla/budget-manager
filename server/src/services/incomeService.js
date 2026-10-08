@@ -33,6 +33,7 @@ const incomeService = createRecordService({
   },
   applyStatusChange: applyIncomeStatusChange,
   auditedFields: [
+    'incomeType',
     'dueDate',
     'receivedDate',
     'source',

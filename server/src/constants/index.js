@@ -8,6 +8,9 @@
 const INCOME_STATUSES = Object.freeze(['Expected', 'Received']);
 const EXPENSE_STATUSES = Object.freeze(['Paid', 'Pending', 'Closed']);
 const EXPENSE_TYPES = Object.freeze(['Regular', 'Additional']);
+// Income groups. Add a type here and in a migration's CHECK constraint.
+const INCOME_TYPES = Object.freeze(['Salary', 'House Rent', 'Other Income']);
+const DEFAULT_INCOME_TYPE = 'Other Income';
 
 // Statuses that mean the money actually moved, so an actual date may be recorded.
 const INCOME_RECEIVED_STATUS = 'Received';
@@ -39,17 +42,19 @@ const LIMITS = Object.freeze({
 const SESSION_COOKIE_NAME = 'budget_session';
 
 // Version 2 added due/actual dates; version 3 folded upcoming income into income
-// (status Expected). Older files still import and are converted.
+// (status Expected); version 4 added incomeType. Older files still import and are converted.
 const EXPORT_FORMAT = Object.freeze({
   NAME: 'budget-manager-export',
-  VERSION: 3,
-  SUPPORTED_VERSIONS: Object.freeze([1, 2, 3]),
+  VERSION: 4,
+  SUPPORTED_VERSIONS: Object.freeze([1, 2, 3, 4]),
 });
 
 module.exports = {
   INCOME_STATUSES,
   EXPENSE_STATUSES,
   EXPENSE_TYPES,
+  INCOME_TYPES,
+  DEFAULT_INCOME_TYPE,
   INCOME_RECEIVED_STATUS,
   EXPENSE_PAID_STATUS,
   EXPENSE_SETTLED_STATUSES,

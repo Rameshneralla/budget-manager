@@ -312,26 +312,55 @@
 
 /* ------------------------------ Grouped records ---------------------------- */
 
-// Section heading with subtotal (e.g. expenses grouped by category).
+// Accordion section heading with subtotal (e.g. expenses grouped by category).
+// The whole heading is one button; the padding lives on it so all of it is clickable.
 .group-row th,
 .group-row--card {
-  padding: $space-2 $space-3;
+  padding: 0;
   border-bottom: 1px solid var(--app-border);
   background: var(--app-surface-muted);
-}
-
-.group-row--card {
-  padding-inline: $space-4;
 }
 
 .group-heading {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: $space-1 $space-3;
+  width: 100%;
+  min-height: $touch-target;
+  padding: $space-2 $space-3;
+  border: 0;
+  background: transparent;
+  color: inherit;
   font-size: $font-size-sm;
+  text-align: left;
   text-transform: none;
   letter-spacing: normal;
+  cursor: pointer;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background: var(--app-surface-hover);
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    color: var(--app-text-muted);
+    transition: transform $transition-fast;
+  }
+
+  &.is-open &__chevron {
+    transform: rotate(90deg);
+  }
+
+  &__outstanding {
+    @include tone(warning);
+    padding: 0.05rem 0.5rem;
+    border: 1px solid transparent;
+    border-radius: $radius-pill;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+  }
 
   &__label {
     color: var(--app-text);
@@ -352,8 +381,27 @@
 
 // On cards the subtotal sits on the right, aligned with each card's amount.
 // (In the wide, scrollable table it stays next to the group name so it is always visible.)
+@media (prefers-reduced-motion: reduce) {
+  .group-heading,
+  .group-heading__chevron {
+    transition: none;
+  }
+}
+
+.group-row--card .group-heading {
+  padding-inline: $space-4;
+}
+
 .group-row--card .group-heading__total {
   margin-left: auto;
+}
+
+// Group switch + "Expand all / Collapse all" side by side.
+.filter-bar__grouping {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 $space-3;
 }
 
 .filter-bar__toggle {

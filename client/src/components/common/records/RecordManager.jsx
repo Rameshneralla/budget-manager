@@ -44,14 +44,49 @@ export default function RecordManager({ config }) {
   const table = useTableState(records, config);
 
   // Optional grouping (config.groupBy), e.g. expenses by category with subtotals.
+  // Groups are accordions: closed by default, opened one by one or all at once.
+  // While searching / filtering they all open, so matches are never hidden.
+  // Grouped view shows every matching record (no pages); paging is for the flat list.
   const [isGrouped, setIsGrouped] = useState(Boolean(config.groupBy));
+  const [openGroups, setOpenGroups] = useState(() => new Set());
   const groups = useMemo(() => {
     if (!isGrouped || !config.groupBy) {
       return null;
     }
-    const { getGroupLabel, order } = config.groupBy;
-    return groupRecords(table.pageRecords, getGroupLabel, order);
-  }, [isGrouped, config.groupBy, table.pageRecords]);
+    const { getGroupLabel, order, outstandingStatus, outstandingLabel } = config.groupBy;
+    return groupRecords(table.filteredRecords, getGroupLabel, order).map((group, index) => ({
+      ...group,
+      domId: `${config.singular.toLowerCase()}-group-${index}`,
+      isOpen: table.hasActiveFilters || openGroups.has(group.label),
+      outstandingCount: group.records.filter((record) => record.status === outstandingStatus)
+        .length,
+      outstandingLabel,
+    }));
+  }, [
+    isGrouped,
+    config.groupBy,
+    config.singular,
+    table.filteredRecords,
+    table.hasActiveFilters,
+    openGroups,
+  ]);
+  const allGroupsOpen = Boolean(groups?.length) && groups.every((group) => group.isOpen);
+
+  function toggleGroup(label) {
+    setOpenGroups((current) => {
+      const next = new Set(current);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      return next;
+    });
+  }
+
+  function toggleAllGroups() {
+    setOpenGroups(allGroupsOpen ? new Set() : new Set(groups.map((group) => group.label)));
+  }
   const visibleIds = useMemo(
     () => table.filteredRecords.map((record) => record.id),
     [table.filteredRecords]
@@ -139,14 +174,26 @@ export default function RecordManager({ config }) {
           filters={config.filters}
         >
           {config.groupBy && (
-            <Form.Check
-              type="switch"
-              id="group-records"
-              className="filter-bar__toggle"
-              label={config.groupBy.label}
-              checked={isGrouped}
-              onChange={(event) => setIsGrouped(event.target.checked)}
-            />
+            <div className="filter-bar__grouping">
+              <Form.Check
+                type="switch"
+                id="group-records"
+                className="filter-bar__toggle"
+                label={config.groupBy.label}
+                checked={isGrouped}
+                onChange={(event) => setIsGrouped(event.target.checked)}
+              />
+              {groups && groups.length > 0 && !table.hasActiveFilters && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="p-0 text-nowrap"
+                  onClick={toggleAllGroups}
+                >
+                  {allGroupsOpen ? 'Collapse all' : 'Expand all'}
+                </Button>
+              )}
+            </div>
           )}
         </FilterBar>
 
@@ -170,13 +217,14 @@ export default function RecordManager({ config }) {
           table={table}
           columns={columns}
           groups={groups}
+          onToggleGroup={toggleGroup}
           selection={selection}
           onAdd={() => openForm()}
           onEdit={openForm}
           onDelete={(record) => setPendingDelete({ record })}
         />
 
-        {table.filteredRecords.length > 0 && (
+        {!groups && table.filteredRecords.length > 0 && (
           <TablePagination
             page={table.page}
             totalPages={table.totalPages}

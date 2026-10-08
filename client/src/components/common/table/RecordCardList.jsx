@@ -4,7 +4,7 @@
  * card config: { title(record), subtitle(record), amount(record) }
  * Columns with `showInCard: true` are listed as label/value details.
  * The status column (key 'status') appears in the card footer.
- * `groups` (optional): [{ label, records, total }] adds a subtotal heading per group.
+ * `groups` (optional): accordion sections with a subtotal heading (see DataTable).
  */
 import Form from 'react-bootstrap/Form';
 import SelectCheckbox from './SelectCheckbox';
@@ -50,6 +50,7 @@ export default function RecordCardList({
   card,
   records,
   groups,
+  onToggleGroup,
   sort,
   onSort,
   selection,
@@ -123,9 +124,17 @@ export default function RecordCardList({
         groups.map((group) => (
           <section key={group.label} aria-label={group.label}>
             <div className="group-row group-row--card">
-              <GroupHeading group={group} />
+              <GroupHeading
+                group={group}
+                controlsId={group.domId}
+                onToggle={() => onToggleGroup(group.label)}
+              />
             </div>
-            <ul className="record-cards">{group.records.map(renderCard)}</ul>
+            {group.isOpen && (
+              <ul className="record-cards" id={group.domId}>
+                {group.records.map(renderCard)}
+              </ul>
+            )}
           </section>
         ))
       ) : (

@@ -143,6 +143,9 @@ export function useExpenseConfig() {
         label: 'Group by category',
         getGroupLabel: (expense) => expense.category,
         order: meta.categories.map((category) => category.name),
+        // Shown on the collapsed heading, e.g. '1 pending'.
+        outstandingStatus: 'Pending',
+        outstandingLabel: 'pending',
       },
 
       searchFields: ['payee', 'purpose', 'reference', 'notes'],

@@ -130,6 +130,7 @@ describe('income', () => {
 
   it('supports create, full update and delete', async () => {
     const created = await api('POST', '/income', {
+      incomeType: 'Other Income',
       dueDate: '2026-10-15',
       source: 'Freelance',
       amount: 2500.5,
@@ -170,6 +171,7 @@ describe('income', () => {
 
   it('only allows an actual received date when the status is Received', async () => {
     const { status, body } = await api('POST', '/income', {
+      incomeType: 'Other Income',
       dueDate: '2026-10-20',
       receivedDate: '2026-10-21',
       source: 'Bonus',
@@ -185,6 +187,7 @@ describe('income', () => {
     assert.deepEqual(meta.body.data.statuses.income, ['Expected', 'Received']);
 
     const { status, body } = await api('POST', '/income', {
+      incomeType: 'Other Income',
       dueDate: '2026-10-20',
       source: 'Bonus',
       amount: 1000,
@@ -192,6 +195,48 @@ describe('income', () => {
     });
     assert.equal(status, 400);
     assert.ok(body.error.details.status);
+  });
+
+  it('groups income as Salary, House Rent or Other Income', async () => {
+    const meta = (await api('GET', '/meta')).body.data;
+    assert.deepEqual(meta.incomeTypes, ['Salary', 'House Rent', 'Other Income']);
+    const methods = meta.paymentMethods.map((method) => method.name);
+    assert.ok(methods.includes('GPay') && methods.includes('Paytm'));
+
+    const rows = (await api('GET', '/income?month=2026-10')).body.data;
+    assert.deepEqual(rows.map((row) => `${row.incomeType}: ${row.source}`).sort(), [
+      'House Rent: House Rent',
+      'House Rent: House Rent',
+      'Other Income: Freelance Project',
+      'Other Income: Loan Interest',
+      'Salary: Salary',
+    ]);
+
+    const gpay = meta.paymentMethods.find((method) => method.name === 'GPay');
+    const created = await api('POST', '/income', {
+      incomeType: 'Other Income',
+      dueDate: '2026-10-12',
+      receivedDate: '2026-10-12',
+      source: 'Friend returned loan',
+      amount: 1500,
+      status: 'Received',
+      paymentMethodId: gpay.id,
+    });
+    assert.equal(created.status, 201);
+    assert.deepEqual(
+      [created.body.data.incomeType, created.body.data.paymentMethod],
+      ['Other Income', 'GPay']
+    );
+    await api('DELETE', `/income/${created.body.data.id}`);
+
+    const missingType = await api('POST', '/income', {
+      dueDate: '2026-10-12',
+      source: 'X',
+      amount: 10,
+      status: 'Received',
+    });
+    assert.equal(missingType.status, 400);
+    assert.ok(missingType.body.error.details.incomeType);
   });
 
   it('returns field errors for invalid input', async () => {
@@ -210,6 +255,7 @@ describe('income', () => {
 
   it('adds a month when a record is saved in it and removes it when emptied', async () => {
     const created = await api('POST', '/income', {
+      incomeType: 'Salary',
       dueDate: '2026-11-01',
       source: 'Salary',
       amount: 80000,
@@ -300,6 +346,7 @@ describe('expenses', () => {
 
   it('counts income in the month it was received', async () => {
     const created = await api('POST', '/income', {
+      incomeType: 'House Rent',
       dueDate: '2026-09-25',
       receivedDate: '2026-10-02',
       source: 'Late Rent',
@@ -388,17 +435,19 @@ describe('data management and errors', () => {
     const imported = await api('POST', '/data/import', exported);
     assert.equal(imported.status, 200);
     assert.deepEqual(imported.body.data, { months: 1, income: 5, expenses: 11 });
-    assert.equal(exported.version, 3);
+    assert.equal(exported.version, 4);
     assert.equal(exported.upcomingIncome, undefined);
     assert.equal((await getSummary()).totalExpenses, 54200);
   });
 
   it('imports version 2 files: Pending -> Expected, upcoming income -> income', async () => {
     const current = await fetch(`${baseUrl}/api/data/export`).then((res) => res.json());
-    const base = current.income.filter(
+    // Version 2 had no income type.
+    const withoutType = current.income.map(({ incomeType: _type, ...row }) => row);
+    const base = withoutType.filter(
       (row) => !['Freelance Project', 'Loan Interest'].includes(row.source)
     );
-    const salary = current.income.find((row) => row.source === 'Salary');
+    const salary = withoutType.find((row) => row.source === 'Salary');
     const versionTwo = {
       ...current,
       version: 2,
@@ -439,6 +488,14 @@ describe('data management and errors', () => {
     assert.equal(rows.filter((row) => row.source === 'Bonus').length, 1);
     assert.equal(rows.filter((row) => row.amount === 6000).length, 1);
     assert.equal((await getSummary()).expectedIncome, 18000);
+    // Income type worked out from the source name.
+    const typeOf = (source) => rows.find((row) => row.source === source).incomeType;
+    assert.deepEqual(['Salary', 'House Rent', 'Freelance Project', 'Bonus'].map(typeOf), [
+      'Salary',
+      'House Rent',
+      'Other Income',
+      'Other Income',
+    ]);
 
     await api('POST', '/data/import', current);
   });

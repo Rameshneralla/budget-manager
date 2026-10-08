@@ -1,11 +1,12 @@
 /** Validation rules for an income record (create and full update). */
 const FieldValidator = require('./FieldValidator');
-const { INCOME_STATUSES, INCOME_RECEIVED_STATUS, LIMITS } = require('../constants');
+const { INCOME_STATUSES, INCOME_TYPES, INCOME_RECEIVED_STATUS, LIMITS } = require('../constants');
 
 function validateIncomeInput(body) {
   const v = new FieldValidator(body);
 
   const income = {
+    incomeType: v.oneOf('incomeType', 'Income type', INCOME_TYPES),
     dueDate: v.isoDate('dueDate', 'Due date'),
     receivedDate: v.isoDate('receivedDate', 'Actual received date', { required: false }),
     source: v.requiredText('source', 'Source'),

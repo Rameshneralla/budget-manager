@@ -3,8 +3,9 @@
  * page itself never overflows.
  *
  * Column definition: { key, label, render(record), sortable?, className?, headerClassName? }
- * `groups` (optional): [{ label, records, total }] renders a heading row with a
- * subtotal before each group, like the category sections of the budget sheet.
+ * `groups` (optional): [{ label, records, total, isOpen, domId, ... }] renders an
+ * accordion heading row with a subtotal per group, like the category sections of
+ * the budget sheet; a group's rows show only while it is open (onToggleGroup).
  */
 import SelectCheckbox from './SelectCheckbox';
 import SortableHeader, { getAriaSort } from './SortableHeader';
@@ -16,6 +17,7 @@ export default function DataTable({
   columns,
   records,
   groups,
+  onToggleGroup,
   sort,
   onSort,
   selection,
@@ -86,13 +88,17 @@ export default function DataTable({
         </thead>
         {groups ? (
           groups.map((group) => (
-            <tbody key={group.label}>
+            <tbody key={group.label} id={group.domId}>
               <tr className="group-row">
                 <th scope="rowgroup" colSpan={columns.length + 2}>
-                  <GroupHeading group={group} />
+                  <GroupHeading
+                    group={group}
+                    controlsId={group.domId}
+                    onToggle={() => onToggleGroup(group.label)}
+                  />
                 </th>
               </tr>
-              {group.records.map(renderRow)}
+              {group.isOpen && group.records.map(renderRow)}
             </tbody>
           ))
         ) : (

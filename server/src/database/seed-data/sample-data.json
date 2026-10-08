@@ -1,12 +1,13 @@
 {
   "format": "budget-manager-export",
-  "version": 3,
+  "version": 4,
   "description": "FICTIONAL sample data for demos and tests. Real budget data is never committed: put it in database/seed.private.json (git-ignored) or load it with Settings > Import Data.",
   "months": [
     "2026-10"
   ],
   "income": [
     {
+      "incomeType": "Salary",
       "dueDate": "2026-10-01",
       "receivedDate": "2026-10-02",
       "source": "Salary",
@@ -18,6 +19,7 @@
       "notes": null
     },
     {
+      "incomeType": "House Rent",
       "dueDate": "2026-10-03",
       "receivedDate": "2026-10-04",
       "source": "House Rent",
@@ -29,6 +31,7 @@
       "notes": null
     },
     {
+      "incomeType": "House Rent",
       "dueDate": "2026-10-25",
       "receivedDate": null,
       "source": "House Rent",
@@ -40,6 +43,7 @@
       "notes": null
     },
     {
+      "incomeType": "Other Income",
       "dueDate": "2026-10-20",
       "receivedDate": null,
       "source": "Freelance Project",
@@ -51,6 +55,7 @@
       "notes": null
     },
     {
+      "incomeType": "Other Income",
       "dueDate": "2026-10-28",
       "receivedDate": null,
       "source": "Loan Interest",

@@ -27,7 +27,8 @@ The React app never reads seed files or keeps budget data in the browser. Every 
   - one-click status change from the status badge
   - search, filters, sorting and pagination
   - select all, bulk status change and bulk delete (with confirmation)
-- **Expenses grouped by category with subtotals** (switchable), like the original budget sheet.
+- **Grouped, collapsible lists** (switchable), like the original budget sheet: expenses by category, income by type (**Salary**, **House Rent**, **Other Income**). Each group is an accordion header with its record count, how many are still pending / expected, and its subtotal; groups start closed (open one, or Expand all). While searching or filtering they open so matches stay visible.
+- **Other Income** has a short form: Income Date, Income From, Amount and **Income By** (UPI, Phone Pay, GPay, Paytm, Bank Transfer or Cash).
 - **Settings › Data Management**: JSON export, JSON import (replaces all data, asks first) and SQLite database backup, plus the full change history.
 - Validation on both client and server, toast notifications, and loading, empty and error states.
 - **Accessibility and theming:** light/dark theme, keyboard-accessible modals and menus, and statuses shown with an icon _and_ text.
@@ -166,7 +167,7 @@ npm run seed:reset    # REPLACE all budget data with the seed data
 | `months`          | Months that have data — the month dropdown is read from here                                                                                                                                              |
 | `categories`      | Property & Savings, Interest & Finance, Household & Personal, Additional / One-Time                                                                                                                       |
 | `payment_methods` | Phone Pay, UPI, Cash, Bank Transfer, Card, Other                                                                                                                                                          |
-| `income`          | Due date, actual received date, source, amount, purpose, status (Expected/Received), payment method, reference, notes                                                                                     |
+| `income`          | Income type (Salary / House Rent / Other Income), due date, actual received date, source, amount, purpose, status (Expected/Received), payment method, reference, notes                                   |
 | `expenses`        | Due date, actual paid date, category, payee, amount, purpose, type (Regular/Additional), payment method, reference, end date of the commitment (e.g. 2038, Nov-2027), status (Paid/Pending/Closed), notes |
 | `audit_logs`      | Created / Updated / Status Changed / Deleted / Imported history                                                                                                                                           |
 
@@ -282,7 +283,7 @@ curl -X PATCH -H "Content-Type: application/json" -d '{"status":"Received"}' htt
 ## 9. Testing
 
 ```bash
-npm test        # API + login tests against an in-memory database (30 tests)
+npm test        # API + login tests against an in-memory database (31 tests)
 npm run lint    # ESLint for server and client
 npm run format  # Prettier
 ```
@@ -296,6 +297,7 @@ The tests cover:
 - months appearing and disappearing
 - expense Paid → Pending → Closed
 - records counted in the month they were paid / received (due August, paid October = October)
+- income types (and inferring them for older import files), GPay / Paytm
 - bulk status and bulk delete
 - expected income bulk-marked Received and back
 - export/import round trip, importing older files (upcoming income → Expected income), rejected imports, the audit trail and JSON errors

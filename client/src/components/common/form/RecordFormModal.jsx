@@ -27,10 +27,39 @@ function focusField(name) {
   document.getElementById(`field-${name}`)?.focus();
 }
 
-export default function RecordFormModal({ show, title, fields, initialValues, onSubmit, onHide }) {
+const DYNAMIC_PROPERTIES = ['label', 'required', 'helpText', 'placeholder'];
+
+/**
+ * Fields can depend on the other values (e.g. income type):
+ *   visible(values) -> false hides the field (not shown, not validated)
+ *   label / required / helpText / placeholder may be (values) => value
+ */
+function resolveFields(fields, values) {
+  return fields
+    .filter((field) => !field.visible || field.visible(values))
+    .map((field) => {
+      const resolved = { ...field };
+      DYNAMIC_PROPERTIES.forEach((property) => {
+        if (typeof field[property] === 'function') {
+          resolved[property] = field[property](values);
+        }
+      });
+      return resolved;
+    });
+}
+
+export default function RecordFormModal({
+  show,
+  title,
+  fields: fieldDefinitions,
+  initialValues,
+  onSubmit,
+  onHide,
+}) {
   const [values, setValues] = useState(initialValues);
   const [errors, setErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
+  const fields = resolveFields(fieldDefinitions, values);
 
   function handleChange(name, value) {
     setValues((current) => ({ ...current, [name]: value }));
@@ -49,6 +78,7 @@ export default function RecordFormModal({ show, title, fields, initialValues, on
 
     setIsSaving(true);
     try {
+      // Hidden fields keep their values (e.g. an old purpose), so nothing is lost on edit.
       await onSubmit(values);
     } catch (error) {
       // Server-side validation errors are shown next to their fields.

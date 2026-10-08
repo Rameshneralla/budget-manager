@@ -5,7 +5,8 @@ const { createRecordTableHelpers, placeholdersFor, SQL_NOW } = require('./record
 
 const SELECT_INCOME = `
   SELECT
-    i.id, i.month_key, i.due_date, i.received_date, i.source, i.amount_paise, i.purpose,
+    i.id, i.month_key, i.income_type, i.due_date, i.received_date, i.source, i.amount_paise,
+    i.purpose,
     i.status, i.payment_method_id, pm.name AS payment_method_name,
     i.reference, i.notes, i.created_at, i.updated_at
   FROM income i
@@ -20,6 +21,7 @@ function toIncome(row) {
   return {
     id: row.id,
     month: row.month_key,
+    incomeType: row.income_type,
     dueDate: row.due_date,
     receivedDate: row.received_date,
     source: row.source,
@@ -38,6 +40,7 @@ function toIncome(row) {
 function toRowParams(income) {
   return {
     monthKey: income.month,
+    incomeType: income.incomeType,
     dueDate: income.dueDate,
     receivedDate: income.receivedDate ?? null,
     source: income.source,
@@ -80,11 +83,11 @@ const incomeRepository = {
     const result = getDb()
       .prepare(
         `INSERT INTO income
-           (month_key, due_date, received_date, source, amount_paise, purpose, status,
-            payment_method_id, reference, notes)
+           (month_key, income_type, due_date, received_date, source, amount_paise, purpose,
+            status, payment_method_id, reference, notes)
          VALUES
-           (@monthKey, @dueDate, @receivedDate, @source, @amountPaise, @purpose, @status,
-            @paymentMethodId, @reference, @notes)`
+           (@monthKey, @incomeType, @dueDate, @receivedDate, @source, @amountPaise, @purpose,
+            @status, @paymentMethodId, @reference, @notes)`
       )
       .run(toRowParams(income));
     return this.findById(result.lastInsertRowid);
@@ -94,7 +97,8 @@ const incomeRepository = {
     getDb()
       .prepare(
         `UPDATE income SET
-           month_key = @monthKey, due_date = @dueDate, received_date = @receivedDate,
+           month_key = @monthKey, income_type = @incomeType, due_date = @dueDate,
+           received_date = @receivedDate,
            source = @source,
            amount_paise = @amountPaise, purpose = @purpose, status = @status,
            payment_method_id = @paymentMethodId, reference = @reference, notes = @notes,
