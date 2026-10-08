@@ -15,10 +15,25 @@ const CLIENT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const SERVER_SRC = path.resolve(CLIENT_DIR, '..', 'server', 'src');
 const SHIMS_DIR = path.resolve(CLIENT_DIR, 'src', 'local-backend', 'shims');
 
+/**
+ * Comparable form of a file path. Windows paths are case-insensitive and the
+ * drive letter may arrive as 'c:' or 'C:' depending on how the build was started,
+ * so compare them in lower case there.
+ */
+function pathKey(filePath) {
+  const normalized = path.normalize(filePath);
+  return process.platform === 'win32' ? normalized.toLowerCase() : normalized;
+}
+
+const SERVER_SRC_KEY = pathKey(SERVER_SRC);
+
 /** Server modules that need Node.js, mapped to their browser replacements. */
 const SERVER_MODULE_SHIMS = {
-  [path.join(SERVER_SRC, 'config', 'env.js')]: path.join(SHIMS_DIR, 'env.cjs'),
-  [path.join(SERVER_SRC, 'database', 'connection.js')]: path.join(SHIMS_DIR, 'connection.cjs'),
+  [pathKey(path.join(SERVER_SRC, 'config', 'env.js'))]: path.join(SHIMS_DIR, 'env.cjs'),
+  [pathKey(path.join(SERVER_SRC, 'database', 'connection.js'))]: path.join(
+    SHIMS_DIR,
+    'connection.cjs'
+  ),
 };
 const NODE_BUILTIN_SHIM = path.join(SHIMS_DIR, 'nodeBuiltins.cjs');
 const SHIMMED_BUILTINS = new Set(['fs', 'path', 'node:fs', 'node:path']);
@@ -37,7 +52,7 @@ function serverCodeInBrowser() {
         return null;
       }
       const importerPath = path.normalize(cleanId(importer));
-      if (!importerPath.startsWith(SERVER_SRC)) {
+      if (!pathKey(importerPath).startsWith(SERVER_SRC_KEY)) {
         return null;
       }
       if (SHIMMED_BUILTINS.has(source)) {
@@ -46,7 +61,7 @@ function serverCodeInBrowser() {
       if (source.startsWith('.')) {
         const resolved = path.resolve(path.dirname(importerPath), source);
         const withExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`;
-        const shim = SERVER_MODULE_SHIMS[withExtension];
+        const shim = SERVER_MODULE_SHIMS[pathKey(withExtension)];
         // Forward slashes: the bundler must see the same id the app's own imports use,
         // otherwise it would create a second copy of the module.
         return shim ? normalizePath(shim) : null;
