@@ -27,6 +27,22 @@ function pathKey(filePath) {
 
 const SERVER_SRC_KEY = pathKey(SERVER_SRC);
 
+/**
+ * One id per shim file, using its real on-disk spelling. Shims are reached both
+ * from server code (mapped below) and from the browser backend's own imports;
+ * if those ids differed even in letter case, the bundle would hold two copies
+ * of the module, e.g. two separate database connections.
+ */
+function canonicalId(filePath) {
+  return normalizePath(fs.realpathSync.native(filePath));
+}
+
+const SHIM_FILE_KEYS = new Set(
+  ['env.cjs', 'connection.cjs', 'nodeBuiltins.cjs'].map((name) =>
+    pathKey(path.join(SHIMS_DIR, name))
+  )
+);
+
 /** Server modules that need Node.js, mapped to their browser replacements. */
 const SERVER_MODULE_SHIMS = {
   [pathKey(path.join(SERVER_SRC, 'config', 'env.js'))]: path.join(SHIMS_DIR, 'env.cjs'),
@@ -48,25 +64,40 @@ function serverCodeInBrowser() {
     name: 'budget-manager:server-code-in-browser',
     enforce: 'pre',
     resolveId(source, importer) {
-      if (!importer) {
+      if (!importer || !(source.startsWith('.') || SHIMMED_BUILTINS.has(source))) {
         return null;
       }
       const importerPath = path.normalize(cleanId(importer));
-      if (!pathKey(importerPath).startsWith(SERVER_SRC_KEY)) {
+      const isServerCode = pathKey(importerPath).startsWith(SERVER_SRC_KEY);
+
+      if (SHIMMED_BUILTINS.has(source)) {
+        return isServerCode ? canonicalId(NODE_BUILTIN_SHIM) : null;
+      }
+      const resolved = path.resolve(path.dirname(importerPath), source);
+      // The browser backend importing a shim directly (e.g. ./shims/connection.cjs).
+      if (SHIM_FILE_KEYS.has(pathKey(resolved))) {
+        return canonicalId(resolved);
+      }
+      if (!isServerCode) {
         return null;
       }
-      if (SHIMMED_BUILTINS.has(source)) {
-        return normalizePath(NODE_BUILTIN_SHIM);
+      const withExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`;
+      const shim = SERVER_MODULE_SHIMS[pathKey(withExtension)];
+      return shim ? canonicalId(shim) : null;
+    },
+    // Safety net: a build that would break in the browser must not be deployed.
+    generateBundle(_options, bundle) {
+      const moduleIds = Object.values(bundle).flatMap((chunk) => Object.keys(chunk.modules ?? {}));
+      if (moduleIds.some((id) => id.includes('better-sqlite3'))) {
+        this.error('The Node-only SQLite driver (better-sqlite3) ended up in the browser bundle.');
       }
-      if (source.startsWith('.')) {
-        const resolved = path.resolve(path.dirname(importerPath), source);
-        const withExtension = resolved.endsWith('.js') ? resolved : `${resolved}.js`;
-        const shim = SERVER_MODULE_SHIMS[pathKey(withExtension)];
-        // Forward slashes: the bundler must see the same id the app's own imports use,
-        // otherwise it would create a second copy of the module.
-        return shim ? normalizePath(shim) : null;
+      // Real file modules only: '\0...?commonjs-...' entries are the bundler's own helpers.
+      const shimCopies = moduleIds.filter(
+        (id) => !id.startsWith('\0') && !id.includes('?') && SHIM_FILE_KEYS.has(pathKey(id))
+      );
+      if (new Set(shimCopies.map(pathKey)).size !== shimCopies.length) {
+        this.error(`A browser shim was bundled twice: ${shimCopies.join(', ')}`);
       }
-      return null;
     },
   };
 }
@@ -78,6 +109,9 @@ function githubPagesFiles() {
     apply: 'build',
     closeBundle() {
       const outDir = path.resolve(CLIENT_DIR, 'dist-pages');
+      if (!fs.existsSync(path.join(outDir, 'index.html'))) {
+        return; // the build failed; let its own error show
+      }
       fs.copyFileSync(path.join(outDir, 'index.html'), path.join(outDir, '404.html'));
       fs.writeFileSync(path.join(outDir, '.nojekyll'), '');
     },
