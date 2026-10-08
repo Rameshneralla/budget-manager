@@ -15,3 +15,6 @@ database/backups/
 
 # Real budget data used for seeding (never commit personal finances)
 *.private.json
+
+# GitHub Pages build output
+client/dist-pages/

@@ -1,8 +1,12 @@
 /** Browser file helpers for Settings > Data Management. */
 
 export function downloadJson(data, fileName) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
+  downloadBytes(JSON.stringify(data, null, 2), fileName, 'application/json');
+}
+
+/** Saves raw bytes (e.g. a SQLite backup) as a file download. */
+export function downloadBytes(bytes, fileName, mimeType = 'application/octet-stream') {
+  const url = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
   const link = document.createElement('a');
   link.href = url;
   link.download = fileName;

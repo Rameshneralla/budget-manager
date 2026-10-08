@@ -18,6 +18,8 @@ import NotFound from './pages/NotFound';
 import { ROUTES } from './constants';
 
 const TOAST_AUTO_CLOSE_MS = 3500;
+// '/' normally, '/budget-manager' on GitHub Pages (from Vite's base setting).
+const ROUTER_BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
 
 function ThemedToastContainer() {
   const { theme } = useTheme();
@@ -36,7 +38,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <BudgetProvider>
-          <BrowserRouter>
+          <BrowserRouter basename={ROUTER_BASENAME}>
             <Routes>
               <Route element={<AppLayout />}>
                 <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />

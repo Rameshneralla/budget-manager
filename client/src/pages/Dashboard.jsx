@@ -14,6 +14,7 @@ import CategoryBreakdown from '../components/dashboard/CategoryBreakdown';
 import PaymentMethodSummary from '../components/dashboard/PaymentMethodSummary';
 import UpcomingIncomePanel from '../components/dashboard/UpcomingIncomePanel';
 import RecentActivity from '../components/dashboard/RecentActivity';
+import LocalDataNotice from '../components/common/LocalDataNotice';
 import { useBudget } from '../context/BudgetContext';
 import { useApiData } from '../hooks/useApiData';
 import { dashboardService } from '../services/dashboardService';
@@ -23,11 +24,13 @@ import { RECENT_ACTIVITY_LIMIT } from '../constants';
 import { formatMonthLabel } from '../utils/formatters';
 
 function DashboardContent({ dashboard, upcomingIncome, activityState }) {
-  const { summary } = dashboard;
+  const { summary, counts } = dashboard;
+  const hasNoRecords = counts.income + counts.expenses + counts.upcomingIncome === 0;
 
   return (
     <>
-      <SummaryCards summary={summary} counts={dashboard.counts} />
+      {hasNoRecords && <LocalDataNotice isEmpty />}
+      <SummaryCards summary={summary} counts={counts} />
 
       <Row className="g-3 mb-3">
         <Col xs={12} lg={7}>

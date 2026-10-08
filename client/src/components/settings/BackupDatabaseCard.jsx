@@ -7,6 +7,7 @@ import { FiDatabase } from 'react-icons/fi';
 import SettingsCard from './SettingsCard';
 import { dataService } from '../../services/dataService';
 import { formatDateTime } from '../../utils/formatters';
+import { IS_LOCAL_MODE } from '../../constants/appMode';
 
 export default function BackupDatabaseCard() {
   const [isBackingUp, setIsBackingUp] = useState(false);
@@ -30,7 +31,11 @@ export default function BackupDatabaseCard() {
       icon={FiDatabase}
       tone="positive"
       title="Backup Database"
-      description="Save a complete copy of the SQLite database in the server's backup folder (database/backups by default)."
+      description={
+        IS_LOCAL_MODE
+          ? 'Download a complete copy of the SQLite database file to this device.'
+          : "Save a complete copy of the SQLite database in the server's backup folder (database/backups by default)."
+      }
     >
       <Button variant="outline-secondary" onClick={handleBackup} disabled={isBackingUp}>
         {isBackingUp ? (
@@ -38,7 +43,7 @@ export default function BackupDatabaseCard() {
         ) : (
           <FiDatabase aria-hidden="true" />
         )}
-        Create Backup
+        {IS_LOCAL_MODE ? 'Download Backup' : 'Create Backup'}
       </Button>
       {lastBackup && (
         <p className="form-text mb-0 mt-2" role="status">

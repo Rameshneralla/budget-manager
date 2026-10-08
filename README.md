@@ -35,7 +35,7 @@ The React app never reads seed files or keeps budget data in the browser. Every 
 
 | Layer    | Technology |
 |----------|------------|
-| Frontend | React 19, Vite, React Router, Bootstrap 5 + React-Bootstrap, SCSS, Chart.js (react-chartjs-2), React Icons, React-Toastify |
+| Frontend | React 19, Vite, React Router, Bootstrap 5 + React-Bootstrap, SCSS, Chart.js (react-chartjs-2), React Icons, React-Toastify, sql.js (GitHub Pages build) |
 | Backend  | Node.js (≥ 20), Express 5, Helmet, CORS, dotenv |
 | Database | SQLite via better-sqlite3 (repository pattern, ready to swap for PostgreSQL/MySQL) |
 | Tooling  | npm workspaces, ESLint, Prettier, Node test runner |
@@ -88,7 +88,8 @@ budget-manager/
         │   └── settings/        export / import / backup cards
         ├── context/             BudgetContext (month, lookups, refresh), ThemeContext
         ├── hooks/               useApiData, useTableState, useSelection, useRecordActions, ...
-        ├── services/            api.js (the only fetch code) + one file per API area
+        ├── services/            api.js (the only API code) + one file per API area
+        ├── local-backend/       GitHub Pages build: SQLite + server code running in the browser
         ├── utils/               formatters (₹, dates), validation, table helpers, months
         ├── constants/           routes, status appearance, page sizes, form limits
         └── styles/              SCSS partials (see section 12)
@@ -372,6 +373,38 @@ Chart colours are `--app-chart-1…4` and have been checked for colour-blind sep
 Controllers, routes, validators and the whole frontend stay the same.
 
 ## 14. Login, build and deployment
+
+### Live site: GitHub Pages (free)
+
+**https://rameshneralla.github.io/budget-manager/**
+
+GitHub Pages only hosts static files, so this build (`npm run build:pages`) runs the **same SQLite database and the same server code inside the browser**.
+`client/src/local-backend/` answers the API calls; nothing is rewritten:
+- `localApi.js`: the API routes. They call the unchanged services, validators and repositories from `server/src`, bundled into the page.
+- `sqliteAdapter.js`: lets sql.js (SQLite compiled to WebAssembly) behave like better-sqlite3.
+- `browserDatabase.js` / `browserStorage.js`: open the database, apply the same `migrations/*.sql`, and save it in IndexedDB.
+- `shims/`: browser stand-ins for the three Node-only server modules. `client/vite.config.js` swaps them in for the Pages build only.
+
+What this means for you:
+- **Your data stays on your device.** It is saved in the browser's storage and never uploaded, so the public site has no login and no personal data.
+- **First use:** open the site, go to **Settings › Import Data**, and choose `database/seed.private.json` (or any export file).
+- **Each browser or device has its own copy.** Use Export on one and Import on another to move data. Clearing the site's browser data deletes it, so export regularly.
+- **Backup Database** downloads the `.sqlite` file.
+
+Deploy an update:
+
+```bash
+npm run deploy:pages      # builds client/dist-pages and pushes it to the gh-pages branch
+```
+
+The first time, enable Pages in GitHub: **Settings › Pages › Build and deployment › Deploy from a branch › `gh-pages` / `(root)`**.
+
+Test the Pages build locally:
+
+```bash
+npm run build:pages
+npm run preview:pages -w client    # http://localhost:4173/budget-manager/
+```
 
 ### Login
 

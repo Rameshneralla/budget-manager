@@ -3,11 +3,11 @@ const globals = require('globals');
 const reactHooks = require('eslint-plugin-react-hooks');
 
 module.exports = [
-  { ignores: ['**/node_modules/**', 'client/dist/**', 'database/**'] },
+  { ignores: ['**/node_modules/**', 'client/dist/**', 'client/dist-pages/**', 'database/**'] },
 
   // Backend (CommonJS, Node)
   {
-    files: ['server/**/*.js', 'eslint.config.js'],
+    files: ['server/**/*.js', 'scripts/**/*.js', 'eslint.config.js'],
     languageOptions: {
       ecmaVersion: 2023,
       sourceType: 'commonjs',

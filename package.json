@@ -16,7 +16,9 @@
     "seed:reset": "npm run seed:reset -w server",
     "test": "npm run test -w server",
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.{js,jsx,scss,json,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,scss,json,md}\"",
+    "build:pages": "npm run build:pages -w client",
+    "deploy:pages": "npm run build:pages && node scripts/deploy-pages.js"
   },
   "overrides": {
     "shell-quote": "^1.11.0"
