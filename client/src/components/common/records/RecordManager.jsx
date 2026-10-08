@@ -10,7 +10,7 @@
 import { useMemo, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import { FiPlus } from 'react-icons/fi';
+import { FiChevronsDown, FiChevronsUp, FiPlus } from 'react-icons/fi';
 import PageHeader from '../PageHeader';
 import MonthSelector from '../MonthSelector';
 import SummaryStrip from '../SummaryStrip';
@@ -183,13 +183,19 @@ export default function RecordManager({ config }) {
                 checked={isGrouped}
                 onChange={(event) => setIsGrouped(event.target.checked)}
               />
-              {groups && groups.length > 0 && !table.hasActiveFilters && (
+              {groups && groups.length > 0 && (
                 <Button
-                  variant="link"
+                  variant="outline-secondary"
                   size="sm"
-                  className="p-0 text-nowrap"
                   onClick={toggleAllGroups}
+                  disabled={table.hasActiveFilters}
+                  title={table.hasActiveFilters ? 'All groups are open while filtering' : undefined}
                 >
+                  {allGroupsOpen ? (
+                    <FiChevronsUp aria-hidden="true" />
+                  ) : (
+                    <FiChevronsDown aria-hidden="true" />
+                  )}
                   {allGroupsOpen ? 'Collapse all' : 'Expand all'}
                 </Button>
               )}

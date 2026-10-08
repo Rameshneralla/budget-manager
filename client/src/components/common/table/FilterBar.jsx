@@ -41,7 +41,10 @@ function FilterControl({ filter, value, onChange }) {
   );
 }
 
-/** `children`: extra always-visible controls, e.g. a "Group by category" switch. */
+/**
+ * Layout: search and filters on top; a toolbar row below with `children` on the
+ * left (e.g. the "Group by category" switch) and Reset on the right.
+ */
 export default function FilterBar({ searchLabel, searchPlaceholder, table, filters, children }) {
   // On phones the filters are folded away behind a button to keep the records in view.
   const isMobile = useMediaQuery(MOBILE_MEDIA_QUERY);
@@ -73,7 +76,19 @@ export default function FilterBar({ searchLabel, searchPlaceholder, table, filte
         </Button>
       )}
       {showFilters && <FilterControls id="records-filters" filters={filters} table={table} />}
-      {children}
+      <div className="filter-bar__footer">
+        <div className="filter-bar__footer-start">{children}</div>
+        <Button
+          variant="outline-secondary"
+          size="sm"
+          // Hidden on phones until a filter is active (it would only take up a line).
+          className={`filter-bar__reset${table.hasActiveFilters ? '' : ' filter-bar__reset--idle'}`}
+          onClick={table.resetFilters}
+          disabled={!table.hasActiveFilters}
+        >
+          <FiRotateCcw aria-hidden="true" /> Reset filters
+        </Button>
+      </div>
     </div>
   );
 }
@@ -89,14 +104,6 @@ function FilterControls({ id, filters, table }) {
           onChange={table.setFilterValue}
         />
       ))}
-      <Button
-        variant="outline-secondary"
-        className="filter-bar__reset"
-        onClick={table.resetFilters}
-        disabled={!table.hasActiveFilters}
-      >
-        <FiRotateCcw aria-hidden="true" /> Reset
-      </Button>
     </div>
   );
 }

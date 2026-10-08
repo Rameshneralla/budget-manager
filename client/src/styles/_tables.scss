@@ -46,15 +46,33 @@
   display: contents;
 }
 
-.filter-bar__reset {
-  @include media-up(sm) {
-    grid-column: 1 / -1;
-    justify-self: start;
-  }
+// Toolbar row under the filters: view options on the left, Reset on the right.
+.filter-bar__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-2 $space-3;
+  grid-column: 1 / -1;
+  padding-top: $space-3;
+  border-top: 1px solid var(--app-border);
+}
 
-  @include media-up(lg) {
-    grid-column: auto;
-    justify-self: stretch;
+.filter-bar__footer-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-2 $space-4;
+  min-width: 0;
+}
+
+.filter-bar__reset {
+  margin-left: auto;
+
+  &--idle {
+    @include media-down(md) {
+      display: none;
+    }
   }
 }
 
@@ -401,7 +419,7 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0 $space-3;
+  gap: $space-2 $space-4;
 }
 
 .filter-bar__toggle {
