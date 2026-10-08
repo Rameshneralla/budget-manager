@@ -77,7 +77,9 @@ export async function checkRepository(config) {
   const response = await githubRequest(config, 'GET', repoPath(config));
   if (response.status === 404) {
     throw new SyncError(
-      `Repository "${config.owner}/${config.repo}" was not found, or the token cannot access it.`,
+      `Repository "${config.owner}/${config.repo}" was not found, or the token cannot access it. ` +
+        `Check the repository exists, then edit the token on GitHub: Repository access → ` +
+        `"Only select repositories" → ${config.repo}, and Contents → "Read and write".`,
       'not-found'
     );
   }
