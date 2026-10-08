@@ -17,6 +17,7 @@ import {
   dateColumn,
   dateRangeFilters,
   lookupToOptions,
+  onlyWithStatus,
   selectFilter,
   statusColumn,
   textColumn,
@@ -24,6 +25,8 @@ import {
 } from '../common/records/recordConfigHelpers';
 
 const DEFAULT_EXPENSE_STATUS = 'Paid';
+// Statuses where an actual paid date makes sense (mirrors the server).
+const SETTLED_STATUSES = ['Paid', 'Closed'];
 const DEFAULT_EXPENSE_TYPE = 'Regular';
 const DEFAULT_PAYMENT_METHOD_NAME = 'Phone Pay';
 
@@ -39,7 +42,8 @@ function buildFormValueConverter(paymentMethods) {
   return function toFormValues(expense, monthKey) {
     if (!expense) {
       return {
-        date: defaultDateForMonth(monthKey),
+        dueDate: defaultDateForMonth(monthKey),
+        paidDate: '',
         categoryId: '',
         payee: '',
         amount: '',
@@ -53,7 +57,8 @@ function buildFormValueConverter(paymentMethods) {
       };
     }
     return {
-      date: expense.date,
+      dueDate: expense.dueDate,
+      paidDate: toInputValue(expense.paidDate),
       categoryId: toInputValue(expense.categoryId),
       payee: expense.payee,
       amount: toInputValue(expense.amount),
@@ -70,7 +75,8 @@ function buildFormValueConverter(paymentMethods) {
 
 function toPayload(values) {
   return {
-    date: values.date,
+    dueDate: values.dueDate,
+    paidDate: toNullableText(values.paidDate),
     categoryId: toNullableId(values.categoryId),
     payee: values.payee.trim(),
     amount: Number(values.amount),
@@ -107,7 +113,7 @@ export function useExpenseConfig() {
       describe: describeExpense,
 
       columns: [
-        dateColumn('date', 'Date'),
+        dateColumn('dueDate', 'Due Date'),
         textColumn('category', 'Category', { sortable: true, showInCard: true }),
         textColumn('payee', 'Payee / Name', { sortable: true, primary: true }),
         amountColumn(),
@@ -121,16 +127,17 @@ export function useExpenseConfig() {
         },
         textColumn('paymentMethod', 'Payment Method', { sortable: true, showInCard: true }),
         textColumn('reference', 'Reference / Account', { wrap: true, showInCard: true }),
-        textColumn('endPeriod', 'Due / End Date', { showInCard: true }),
         statusColumn(),
+        dateColumn('paidDate', 'Paid Date', { showInCard: true }),
+        textColumn('endPeriod', 'End Date', { showInCard: true }),
       ],
       card: {
         title: (expense) => expense.payee,
         subtitle: (expense) =>
-          [formatDate(expense.date), expense.purpose].filter(Boolean).join(' · '),
+          [`Due ${formatDate(expense.dueDate)}`, expense.purpose].filter(Boolean).join(' · '),
         amount: (expense) => formatCurrency(expense.amount),
       },
-      defaultSort: { key: 'date', direction: SORT_DIRECTIONS.ASC },
+      defaultSort: { key: 'dueDate', direction: SORT_DIRECTIONS.ASC },
       // Grouped by category with subtotals by default, like the budget sheet.
       groupBy: {
         label: 'Group by category',
@@ -146,11 +153,11 @@ export function useExpenseConfig() {
         selectFilter('status', 'Status', statusOptions),
         selectFilter('paymentMethodId', 'Payment Method', paymentMethodOptions),
         selectFilter('expenseType', 'Expense Type', typeOptions),
-        ...dateRangeFilters('date'),
+        ...dateRangeFilters('dueDate'),
       ],
 
       formFields: [
-        { name: 'date', label: 'Date', type: 'date', required: true },
+        { name: 'dueDate', label: 'Due Date', type: 'date', required: true },
         {
           name: 'categoryId',
           label: 'Category',
@@ -184,13 +191,20 @@ export function useExpenseConfig() {
         { name: 'reference', label: 'Reference / Account', type: 'text' },
         {
           name: 'endPeriod',
-          label: 'Due / End Date',
+          label: 'End Date',
           type: 'text',
           maxLength: VALIDATION_LIMITS.MAX_END_PERIOD_LENGTH,
           placeholder: 'e.g. Nov-2027',
           helpText: 'When this commitment ends, e.g. 2038, Jun-2027 or Closed.',
         },
         { name: 'status', label: 'Status', type: 'select', required: true, options: statusOptions },
+        {
+          name: 'paidDate',
+          label: 'Actual Paid Date',
+          type: 'date',
+          helpText: 'When it was paid. Filled in automatically when marked Paid.',
+          validate: onlyWithStatus(SETTLED_STATUSES, 'Actual paid date'),
+        },
         {
           name: 'notes',
           label: 'Notes',

@@ -28,9 +28,10 @@ export default function LocalDataNotice({ isEmpty = false }) {
     <div className="notice" role="note">
       <FiHardDrive aria-hidden="true" className="notice__icon" />
       <div>
-        Your data is stored <strong>only in this browser on this device</strong> — it is never
-        uploaded. Export regularly as a backup, and use Import to move it to another device.
-        Clearing this site&apos;s browser data deletes it.
+        Your data is saved in this browser on this device. Turn on{' '}
+        <strong>Sync across devices</strong> below to see the same budget on your phone, tablet and
+        laptop (stored in your own private GitHub repository - nowhere else). Without sync, clearing
+        this site&apos;s browser data deletes it, so Export now and then as a backup.
       </div>
     </div>
   );

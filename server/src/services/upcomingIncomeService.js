@@ -2,6 +2,7 @@
 const createRecordService = require('./createRecordService');
 const upcomingIncomeRepository = require('../repositories/upcomingIncomeRepository');
 const { validateUpcomingIncomeInput } = require('../validators/upcomingIncomeValidator');
+const { syncIncomeWithUpcoming } = require('./upcomingIncomeSync');
 const { ENTITY_TYPES, UPCOMING_INCOME_STATUSES } = require('../constants');
 
 const upcomingIncomeService = createRecordService({
@@ -12,6 +13,8 @@ const upcomingIncomeService = createRecordService({
   statuses: UPCOMING_INCOME_STATUSES,
   getMonthKey: (upcomingIncome) => upcomingIncome.month,
   describe: (upcomingIncome) => upcomingIncome.source,
+  // Marking it Received adds it to Income (and so to the dashboard) - see upcomingIncomeSync.js
+  afterWrite: syncIncomeWithUpcoming,
   auditedFields: ['month', 'expectedDate', 'source', 'amount', 'purpose', 'status', 'notes'],
 });
 

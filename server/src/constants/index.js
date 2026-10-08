@@ -9,6 +9,12 @@ const EXPENSE_STATUSES = Object.freeze(['Paid', 'Pending', 'Closed']);
 const UPCOMING_INCOME_STATUSES = Object.freeze(['Expected', 'Pending', 'Received']);
 const EXPENSE_TYPES = Object.freeze(['Regular', 'Additional']);
 
+// Statuses that mean the money actually moved, so an actual date may be recorded.
+const INCOME_RECEIVED_STATUS = 'Received';
+const EXPENSE_PAID_STATUS = 'Paid';
+const EXPENSE_SETTLED_STATUSES = Object.freeze(['Paid', 'Closed']);
+const UPCOMING_RECEIVED_STATUS = 'Received';
+
 const ENTITY_TYPES = Object.freeze({
   INCOME: 'income',
   EXPENSE: 'expense',
@@ -34,9 +40,11 @@ const LIMITS = Object.freeze({
 
 const SESSION_COOKIE_NAME = 'budget_session';
 
+// Version 2 added due/actual dates and upcoming -> income links. Version 1 files still import.
 const EXPORT_FORMAT = Object.freeze({
   NAME: 'budget-manager-export',
-  VERSION: 1,
+  VERSION: 2,
+  SUPPORTED_VERSIONS: Object.freeze([1, 2]),
 });
 
 module.exports = {
@@ -44,6 +52,10 @@ module.exports = {
   EXPENSE_STATUSES,
   UPCOMING_INCOME_STATUSES,
   EXPENSE_TYPES,
+  INCOME_RECEIVED_STATUS,
+  EXPENSE_PAID_STATUS,
+  EXPENSE_SETTLED_STATUSES,
+  UPCOMING_RECEIVED_STATUS,
   ENTITY_TYPES,
   AUDIT_ACTIONS,
   LIMITS,

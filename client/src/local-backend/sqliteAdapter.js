@@ -95,6 +95,13 @@ export class SqliteAdapter {
 
   /** The whole database file, for saving to IndexedDB or downloading as a backup. */
   exportBytes() {
-    return this.database.export();
+    const bytes = this.database.export();
+    // sql.js re-opens the database while exporting, which resets connection settings.
+    this.database.exec('PRAGMA foreign_keys = ON');
+    return bytes;
+  }
+
+  close() {
+    this.database.close();
   }
 }

@@ -1,11 +1,14 @@
 {
   "format": "budget-manager-export",
-  "version": 1,
+  "version": 2,
   "description": "FICTIONAL sample data for demos and tests. Real budget data is never committed: put it in database/seed.private.json (git-ignored) or load it with Settings > Import Data.",
-  "months": ["2026-10"],
+  "months": [
+    "2026-10"
+  ],
   "income": [
     {
-      "date": "2026-10-01",
+      "dueDate": "2026-10-01",
+      "receivedDate": "2026-10-02",
       "source": "Salary",
       "amount": 80000,
       "purpose": "Monthly salary",
@@ -15,7 +18,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-03",
+      "dueDate": "2026-10-03",
+      "receivedDate": "2026-10-04",
       "source": "House Rent",
       "amount": 5000,
       "purpose": "First floor",
@@ -25,7 +29,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-25",
+      "dueDate": "2026-10-25",
+      "receivedDate": null,
       "source": "House Rent",
       "amount": 6000,
       "purpose": "Ground floor",
@@ -43,7 +48,8 @@
       "amount": 9000,
       "purpose": "Website redesign",
       "status": "Pending",
-      "notes": null
+      "notes": null,
+      "incomeIndex": null
     },
     {
       "month": "2026-10",
@@ -52,12 +58,14 @@
       "amount": 3000,
       "purpose": "Interest on money lent",
       "status": "Expected",
-      "notes": null
+      "notes": null,
+      "incomeIndex": null
     }
   ],
   "expenses": [
     {
-      "date": "2026-10-05",
+      "dueDate": "2026-10-05",
+      "paidDate": "2026-10-05",
       "category": "Property & Savings",
       "payee": "Home Loan EMI",
       "amount": 30000,
@@ -70,7 +78,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-05",
+      "dueDate": "2026-10-05",
+      "paidDate": "2026-10-05",
       "category": "Property & Savings",
       "payee": "Chit Fund",
       "amount": 5000,
@@ -83,7 +92,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-06",
+      "dueDate": "2026-10-06",
+      "paidDate": "2026-10-06",
       "category": "Property & Savings",
       "payee": "Recurring Deposit",
       "amount": 3000,
@@ -96,7 +106,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-05",
+      "dueDate": "2026-10-05",
+      "paidDate": "2026-10-05",
       "category": "Interest & Finance",
       "payee": "Gold Loan",
       "amount": 4000,
@@ -109,7 +120,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-05",
+      "dueDate": "2026-10-05",
+      "paidDate": "2026-10-05",
       "category": "Interest & Finance",
       "payee": "Personal Loan",
       "amount": 2500,
@@ -122,7 +134,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-05",
+      "dueDate": "2026-10-05",
+      "paidDate": "2026-10-05",
       "category": "Household & Personal",
       "payee": "Electricity Bill",
       "amount": 1200,
@@ -135,7 +148,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-05",
+      "dueDate": "2026-10-05",
+      "paidDate": "2026-10-05",
       "category": "Household & Personal",
       "payee": "Internet",
       "amount": 800,
@@ -148,7 +162,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-07",
+      "dueDate": "2026-10-07",
+      "paidDate": "2026-10-07",
       "category": "Household & Personal",
       "payee": "Fuel",
       "amount": 700,
@@ -161,7 +176,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-08",
+      "dueDate": "2026-10-08",
+      "paidDate": "2026-10-08",
       "category": "Household & Personal",
       "payee": "Groceries",
       "amount": 3500,
@@ -174,7 +190,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-12",
+      "dueDate": "2026-10-12",
+      "paidDate": "2026-10-12",
       "category": "Additional / One-Time",
       "payee": "Travel",
       "amount": 2000,
@@ -187,7 +204,8 @@
       "notes": null
     },
     {
-      "date": "2026-10-15",
+      "dueDate": "2026-10-15",
+      "paidDate": "2026-10-15",
       "category": "Additional / One-Time",
       "payee": "Course Fee",
       "amount": 1500,

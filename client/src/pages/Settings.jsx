@@ -7,6 +7,7 @@ import ImportDataCard from '../components/settings/ImportDataCard';
 import BackupDatabaseCard from '../components/settings/BackupDatabaseCard';
 import RecentActivity from '../components/dashboard/RecentActivity';
 import LocalDataNotice from '../components/common/LocalDataNotice';
+import SyncCard from '../components/settings/SyncCard';
 import { useBudget } from '../context/BudgetContext';
 import { useApiData } from '../hooks/useApiData';
 import { referenceService } from '../services/referenceService';
@@ -25,6 +26,7 @@ export default function Settings() {
       <PageHeader title="Settings" subtitle="Data management and change history" />
 
       <LocalDataNotice />
+      <SyncCard />
 
       <h2 className="section-title">Data Management</h2>
       <Row className="g-3 mb-4">

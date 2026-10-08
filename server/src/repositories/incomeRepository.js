@@ -5,13 +5,13 @@ const { createRecordTableHelpers, placeholdersFor, SQL_NOW } = require('./record
 
 const SELECT_INCOME = `
   SELECT
-    i.id, i.month_key, i.transaction_date, i.source, i.amount_paise, i.purpose,
+    i.id, i.month_key, i.due_date, i.received_date, i.source, i.amount_paise, i.purpose,
     i.status, i.payment_method_id, pm.name AS payment_method_name,
     i.reference, i.notes, i.created_at, i.updated_at
   FROM income i
   LEFT JOIN payment_methods pm ON pm.id = i.payment_method_id`;
 
-const ORDER_BY_DATE = 'ORDER BY i.transaction_date, i.id';
+const ORDER_BY_DATE = 'ORDER BY i.due_date, i.id';
 
 function toIncome(row) {
   if (!row) {
@@ -20,7 +20,8 @@ function toIncome(row) {
   return {
     id: row.id,
     month: row.month_key,
-    date: row.transaction_date,
+    dueDate: row.due_date,
+    receivedDate: row.received_date,
     source: row.source,
     amount: paiseToRupees(row.amount_paise),
     purpose: row.purpose,
@@ -37,7 +38,8 @@ function toIncome(row) {
 function toRowParams(income) {
   return {
     monthKey: income.month,
-    date: income.date,
+    dueDate: income.dueDate,
+    receivedDate: income.receivedDate ?? null,
     source: income.source,
     amountPaise: rupeesToPaise(income.amount),
     purpose: income.purpose,
@@ -78,10 +80,10 @@ const incomeRepository = {
     const result = getDb()
       .prepare(
         `INSERT INTO income
-           (month_key, transaction_date, source, amount_paise, purpose, status,
+           (month_key, due_date, received_date, source, amount_paise, purpose, status,
             payment_method_id, reference, notes)
          VALUES
-           (@monthKey, @date, @source, @amountPaise, @purpose, @status,
+           (@monthKey, @dueDate, @receivedDate, @source, @amountPaise, @purpose, @status,
             @paymentMethodId, @reference, @notes)`
       )
       .run(toRowParams(income));
@@ -92,7 +94,8 @@ const incomeRepository = {
     getDb()
       .prepare(
         `UPDATE income SET
-           month_key = @monthKey, transaction_date = @date, source = @source,
+           month_key = @monthKey, due_date = @dueDate, received_date = @receivedDate,
+           source = @source,
            amount_paise = @amountPaise, purpose = @purpose, status = @status,
            payment_method_id = @paymentMethodId, reference = @reference, notes = @notes,
            updated_at = ${SQL_NOW}

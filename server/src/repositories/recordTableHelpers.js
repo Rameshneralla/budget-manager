@@ -1,6 +1,7 @@
 /**
  * Queries that are identical for every record table (income, expenses,
- * upcoming_income): status updates, deletes and their bulk variants.
+ * upcoming_income): deletes, bulk deletes and counts. Status changes go through
+ * each repository's update(), so services can adjust related fields at the same time.
  *
  * `tableName` always comes from code (see the repositories), never from user
  * input, so interpolating it is safe. All values use bound parameters.
@@ -15,21 +16,6 @@ function placeholdersFor(values) {
 
 function createRecordTableHelpers(tableName) {
   return {
-    /** Returns the number of rows changed (0 when the id does not exist). */
-    updateStatus(id, status) {
-      const sql = `UPDATE ${tableName} SET status = ?, updated_at = ${SQL_NOW} WHERE id = ?`;
-      return getDb().prepare(sql).run(status, id).changes;
-    },
-
-    updateStatusByIds(ids, status) {
-      const sql = `
-        UPDATE ${tableName} SET status = ?, updated_at = ${SQL_NOW}
-        WHERE id IN (${placeholdersFor(ids)})`;
-      return getDb()
-        .prepare(sql)
-        .run(status, ...ids).changes;
-    },
-
     deleteById(id) {
       return getDb().prepare(`DELETE FROM ${tableName} WHERE id = ?`).run(id).changes;
     },

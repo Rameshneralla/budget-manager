@@ -66,6 +66,19 @@ export function statusColumn() {
   return { key: 'status', label: 'Status', sortable: true, render: (record) => record.status };
 }
 
+/* ------------------------------- Validation -------------------------------- */
+
+/**
+ * Form rule for "actual" dates: they may only be filled in when the status says
+ * the money moved (mirrors the server validators).
+ */
+export function onlyWithStatus(allowedStatuses, fieldLabel) {
+  return (value, values) =>
+    value && !allowedStatuses.includes(values.status)
+      ? `${fieldLabel} can only be set when the status is ${allowedStatuses.join(' or ')}.`
+      : undefined;
+}
+
 /* --------------------------------- Filters -------------------------------- */
 
 export function selectFilter(key, label, options, getValue = (record) => record[key]) {

@@ -5,7 +5,7 @@ const { createRecordTableHelpers, placeholdersFor, SQL_NOW } = require('./record
 
 const SELECT_EXPENSE = `
   SELECT
-    e.id, e.month_key, e.transaction_date, e.category_id, c.name AS category_name,
+    e.id, e.month_key, e.due_date, e.paid_date, e.category_id, c.name AS category_name,
     e.payee, e.amount_paise, e.purpose, e.expense_type,
     e.payment_method_id, pm.name AS payment_method_name,
     e.reference, e.end_period, e.status, e.notes, e.created_at, e.updated_at
@@ -13,7 +13,7 @@ const SELECT_EXPENSE = `
   JOIN categories c ON c.id = e.category_id
   JOIN payment_methods pm ON pm.id = e.payment_method_id`;
 
-const ORDER_BY_DATE = 'ORDER BY e.transaction_date, c.sort_order, e.id';
+const ORDER_BY_DATE = 'ORDER BY e.due_date, c.sort_order, e.id';
 
 function toExpense(row) {
   if (!row) {
@@ -22,7 +22,8 @@ function toExpense(row) {
   return {
     id: row.id,
     month: row.month_key,
-    date: row.transaction_date,
+    dueDate: row.due_date,
+    paidDate: row.paid_date,
     categoryId: row.category_id,
     category: row.category_name,
     payee: row.payee,
@@ -43,7 +44,8 @@ function toExpense(row) {
 function toRowParams(expense) {
   return {
     monthKey: expense.month,
-    date: expense.date,
+    dueDate: expense.dueDate,
+    paidDate: expense.paidDate ?? null,
     categoryId: expense.categoryId,
     payee: expense.payee,
     amountPaise: rupeesToPaise(expense.amount),
@@ -87,10 +89,10 @@ const expenseRepository = {
     const result = getDb()
       .prepare(
         `INSERT INTO expenses
-           (month_key, transaction_date, category_id, payee, amount_paise, purpose,
+           (month_key, due_date, paid_date, category_id, payee, amount_paise, purpose,
             expense_type, payment_method_id, reference, end_period, status, notes)
          VALUES
-           (@monthKey, @date, @categoryId, @payee, @amountPaise, @purpose,
+           (@monthKey, @dueDate, @paidDate, @categoryId, @payee, @amountPaise, @purpose,
             @expenseType, @paymentMethodId, @reference, @endPeriod, @status, @notes)`
       )
       .run(toRowParams(expense));
@@ -101,7 +103,8 @@ const expenseRepository = {
     getDb()
       .prepare(
         `UPDATE expenses SET
-           month_key = @monthKey, transaction_date = @date, category_id = @categoryId,
+           month_key = @monthKey, due_date = @dueDate, paid_date = @paidDate,
+           category_id = @categoryId,
            payee = @payee, amount_paise = @amountPaise, purpose = @purpose,
            expense_type = @expenseType, payment_method_id = @paymentMethodId,
            reference = @reference, end_period = @endPeriod, status = @status, notes = @notes,

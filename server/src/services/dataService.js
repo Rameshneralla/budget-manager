@@ -29,6 +29,10 @@ const MAX_REPORTED_IMPORT_ERRORS = 20;
 
 function exportData() {
   const owner = userRepository.findOwner();
+  const allIncome = incomeRepository.findAll();
+  // Upcoming income -> income links are written as positions in the income list,
+  // because database ids are not kept when a file is imported.
+  const incomePositionById = new Map(allIncome.map((income, index) => [income.id, index]));
 
   return {
     format: EXPORT_FORMAT.NAME,
@@ -36,8 +40,9 @@ function exportData() {
     exportedAt: new Date().toISOString(),
     owner: owner ? owner.fullName : null,
     months: monthRepository.findAllKeys(),
-    income: incomeRepository.findAll().map((income) => ({
-      date: income.date,
+    income: allIncome.map((income) => ({
+      dueDate: income.dueDate,
+      receivedDate: income.receivedDate,
       source: income.source,
       amount: income.amount,
       purpose: income.purpose,
@@ -47,7 +52,8 @@ function exportData() {
       notes: income.notes,
     })),
     expenses: expenseRepository.findAll().map((expense) => ({
-      date: expense.date,
+      dueDate: expense.dueDate,
+      paidDate: expense.paidDate,
       category: expense.category,
       payee: expense.payee,
       amount: expense.amount,
@@ -67,6 +73,7 @@ function exportData() {
       purpose: upcoming.purpose,
       status: upcoming.status,
       notes: upcoming.notes,
+      incomeIndex: incomePositionById.get(upcoming.incomeId) ?? null,
     })),
   };
 }
@@ -130,11 +137,35 @@ function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+/** Version 1 files had one "date" per income/expense; it is the due date. */
+function upgradeDatedItems(items, version) {
+  if (version >= 2) {
+    return items;
+  }
+  return items.map((item) =>
+    item && typeof item === 'object' ? { dueDate: item.date, ...item } : item
+  );
+}
+
+function validateIncomeIndex(collector, key, incomeIndex, incomeCount) {
+  if (incomeIndex === undefined || incomeIndex === null) {
+    return null;
+  }
+  if (!Number.isInteger(incomeIndex) || incomeIndex < 0 || incomeIndex >= incomeCount) {
+    collector.add(key, 'Linked income does not exist in this file.');
+    return null;
+  }
+  return incomeIndex;
+}
+
 function validateImportFile(payload) {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     throw new ValidationError({ file: 'The import file must contain a JSON object.' });
   }
-  if (payload.format !== EXPORT_FORMAT.NAME || payload.version !== EXPORT_FORMAT.VERSION) {
+  if (
+    payload.format !== EXPORT_FORMAT.NAME ||
+    !EXPORT_FORMAT.SUPPORTED_VERSIONS.includes(payload.version)
+  ) {
     throw new ValidationError({
       file: 'This file was not exported from Budget Manager (unknown format or version).',
     });
@@ -151,7 +182,8 @@ function validateImportFile(payload) {
     }
   });
 
-  const income = asArray(payload.income).map((item, index) => {
+  const rawIncome = upgradeDatedItems(asArray(payload.income), payload.version);
+  const income = rawIncome.map((item, index) => {
     const prefix = `income[${index}]`;
     const paymentMethodId = resolveName(
       collector,
@@ -164,7 +196,8 @@ function validateImportFile(payload) {
     return collector.validate(prefix, validateIncomeInput, { ...item, paymentMethodId });
   });
 
-  const expenses = asArray(payload.expenses).map((item, index) => {
+  const rawExpenses = upgradeDatedItems(asArray(payload.expenses), payload.version);
+  const expenses = rawExpenses.map((item, index) => {
     const prefix = `expenses[${index}]`;
     const categoryId = resolveName(
       collector,
@@ -191,9 +224,17 @@ function validateImportFile(payload) {
     });
   });
 
-  const upcomingIncome = asArray(payload.upcomingIncome).map((item, index) =>
-    collector.validate(`upcomingIncome[${index}]`, validateUpcomingIncomeInput, item)
-  );
+  const upcomingIncome = asArray(payload.upcomingIncome).map((item, index) => {
+    const prefix = `upcomingIncome[${index}]`;
+    const validated = collector.validate(prefix, validateUpcomingIncomeInput, item);
+    const incomeIndex = validateIncomeIndex(
+      collector,
+      `${prefix}.incomeIndex`,
+      item?.incomeIndex,
+      rawIncome.length
+    );
+    return validated && { ...validated, incomeIndex };
+  });
 
   collector.throwIfAny();
   return { months, income, expenses, upcomingIncome };
@@ -201,8 +242,8 @@ function validateImportFile(payload) {
 
 function collectMonthKeys({ months, income, expenses, upcomingIncome }) {
   const monthKeys = new Set(months);
-  income.forEach((item) => monthKeys.add(monthKeyFromDate(item.date)));
-  expenses.forEach((item) => monthKeys.add(monthKeyFromDate(item.date)));
+  income.forEach((item) => monthKeys.add(monthKeyFromDate(item.dueDate)));
+  expenses.forEach((item) => monthKeys.add(monthKeyFromDate(item.dueDate)));
   upcomingIncome.forEach((item) => monthKeys.add(item.month));
   return [...monthKeys].sort();
 }
@@ -216,19 +257,24 @@ function importData(payload, { source = 'import file' } = {}) {
   const monthKeys = collectMonthKeys(data);
 
   return runInTransaction(() => {
+    upcomingIncomeRepository.deleteAll();
     incomeRepository.deleteAll();
     expenseRepository.deleteAll();
-    upcomingIncomeRepository.deleteAll();
     monthRepository.deleteAll();
 
     monthKeys.forEach((monthKey) => monthRepository.ensureExists(monthKey));
-    data.income.forEach((item) =>
-      incomeRepository.create({ ...item, month: monthKeyFromDate(item.date) })
+    const createdIncomeIds = data.income.map(
+      (item) => incomeRepository.create({ ...item, month: monthKeyFromDate(item.dueDate) }).id
     );
     data.expenses.forEach((item) =>
-      expenseRepository.create({ ...item, month: monthKeyFromDate(item.date) })
+      expenseRepository.create({ ...item, month: monthKeyFromDate(item.dueDate) })
     );
-    data.upcomingIncome.forEach((item) => upcomingIncomeRepository.create(item));
+    data.upcomingIncome.forEach(({ incomeIndex, ...item }) => {
+      const created = upcomingIncomeRepository.create(item);
+      if (incomeIndex !== null) {
+        upcomingIncomeRepository.setIncomeId(created.id, createdIncomeIds[incomeIndex]);
+      }
+    });
 
     const counts = {
       months: monthKeys.length,

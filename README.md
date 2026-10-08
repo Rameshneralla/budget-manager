@@ -19,6 +19,9 @@ The React app never reads seed files or keeps budget data in the browser. Every 
   - Expense breakdown by category (donut chart and table)
   - Payment-method summary, upcoming income and recent activity
 - **Month dropdown built from the database.** Today it shows only *October 2026*. A month appears as soon as a record is saved in it, and disappears when its last record is deleted.
+- **Due date and actual date** on every income (Due Date + Actual Received Date) and expense (Due Date + Actual Paid Date). The due date decides the month; the actual date fills in automatically when you mark it Received / Paid.
+- **Upcoming Income feeds Income:** marking an upcoming income **Received** adds it to the Income page (and so to the dashboard totals); changing it back removes it again.
+- **Sync across devices** (GitHub Pages version): your laptop, phone and tablet share the same data through your own private GitHub repository.
 - **Income, Expenses and Upcoming Income pages**, each with:
   - add, edit and delete
   - one-click status change from the status badge
@@ -165,13 +168,15 @@ npm run seed:reset    # REPLACE all budget data with the seed data
 | `months`          | Months that have data — the month dropdown is read from here |
 | `categories`      | Property & Savings, Interest & Finance, Household & Personal, Additional / One-Time |
 | `payment_methods` | Phone Pay, UPI, Cash, Bank Transfer, Card, Other |
-| `income`          | Date, source, amount, purpose, status (Received/Pending), payment method, reference, notes |
-| `expenses`        | Date, category, payee, amount, purpose, type (Regular/Additional), payment method, reference, end period, status (Paid/Pending/Closed), notes |
-| `upcoming_income` | Month, optional expected date, source, amount, purpose, status (Expected/Pending/Received), notes |
+| `income`          | Due date, actual received date, source, amount, purpose, status (Received/Pending), payment method, reference, notes |
+| `expenses`        | Due date, actual paid date, category, payee, amount, purpose, type (Regular/Additional), payment method, reference, end date of the commitment (e.g. 2038, Nov-2027), status (Paid/Pending/Closed), notes |
+| `upcoming_income` | Month, optional expected date, source, amount, purpose, status (Expected/Pending/Received), notes, link to the income record created when it was marked Received |
 | `audit_logs`      | Created / Updated / Status Changed / Deleted / Imported history |
 
 - Money is stored as **integer paise**, so totals are exact. The API always works in rupees.
-- Dates are `YYYY-MM-DD`; months are `YYYY-MM`.
+- Dates are `YYYY-MM-DD`; months are `YYYY-MM`. A record belongs to the month of its **due date**.
+- **Actual dates follow the status.** The Received / Paid date can only be set when the status is Received (income) or Paid/Closed (expense). Changing the status from the badge or bulk actions fills it with today, or clears it.
+- **Upcoming → Income:** `server/src/services/upcomingIncomeSync.js` creates, updates or removes the linked income record whenever an upcoming income's status or details change.
 - Every table has `created_at`, and record tables have `updated_at`, which changes on every edit or status change.
 - Indexes cover month, date, status, category and payment method.
 - **No totals are stored.** They are calculated from records on each request.
@@ -255,11 +260,11 @@ Status codes: `200` OK, `201` created, `400` validation, `404` not found, `413` 
 
 ```jsonc
 // income
-{ "date*": "2026-10-25", "source*": "House Rent", "amount*": 6000, "status*": "Pending",
+{ "dueDate*": "2026-10-25", "receivedDate": null, "source*": "House Rent", "amount*": 6000, "status*": "Pending",
   "paymentMethodId": 2, "purpose": null, "reference": null, "notes": null }
 
 // expense
-{ "date*": "2026-10-05", "categoryId*": 1, "payee*": "Home Loan EMI", "amount*": 30000,
+{ "dueDate*": "2026-10-05", "paidDate": "2026-10-05", "categoryId*": 1, "payee*": "Home Loan EMI", "amount*": 30000,
   "expenseType*": "Regular", "paymentMethodId*": 1, "status*": "Paid",
   "purpose": "Home loan", "reference": "Loan Account", "endPeriod": "2040", "notes": null }
 
@@ -268,7 +273,10 @@ Status codes: `200` OK, `201` created, `400` validation, `404` not found, `413` 
   "expectedDate": null, "purpose": null, "notes": null }
 ```
 
-Validation: amount > 0 (max 2 decimals); real calendar dates; text ≤ 200 characters (notes ≤ 1000); statuses and types must be allowed values; category and payment method must exist.
+Validation: amount > 0 (max 2 decimals); real calendar dates; text ≤ 200 characters (notes ≤ 1000); statuses and types must be allowed values; category and payment method must exist; `receivedDate` only with status Received, `paidDate` only with Paid or Closed.
+
+Upcoming income responses include `incomeId`: the income record created when it was marked Received (otherwise `null`).
+Export files are format **version 2** (with `dueDate`, `receivedDate` / `paidDate`, and `incomeIndex` for those links). Version 1 files, where `date` was the only date, still import, with `date` used as the due date.
 
 Example:
 
@@ -280,7 +288,7 @@ curl -X PATCH -H "Content-Type: application/json" -d '{"status":"Received"}' htt
 ## 9. Testing
 
 ```bash
-npm test        # API + login tests against an in-memory database (22 tests)
+npm test        # API + login tests against an in-memory database (28 tests)
 npm run lint    # ESLint for server and client
 npm run format  # Prettier
 ```
@@ -388,7 +396,29 @@ GitHub Pages only hosts static files, so this build (`npm run build:pages`) runs
 What this means for you:
 - **Your data stays on your device.** It is saved in the browser's storage and never uploaded, so the public site has no login and no personal data.
 - **First use:** open the site, go to **Settings › Import Data**, and choose `database/seed.private.json` (or any export file).
-- **Each browser or device has its own copy.** Use Export on one and Import on another to move data. Clearing the site's browser data deletes it, so export regularly.
+- **Each browser starts with its own copy.** To share one budget across your laptop, phone and tablet, turn on **Sync across devices** (below). Otherwise use Export and Import, and export regularly; clearing the site's browser data deletes it.
+
+### Sync across devices (private GitHub repository)
+
+Free, and the data goes only to your own **private** repository; the app refuses to sync to a public one.
+
+One-time setup (the steps are also shown in **Settings › Sync across devices**):
+1. Create a **private** repository named `budget-manager-data` (https://github.com/new).
+2. Create a fine-grained access token (https://github.com/settings/personal-access-tokens/new):
+   - Repository access: *Only select repositories* → `budget-manager-data`
+   - Permissions: *Contents: Read and write*
+3. On each device, open Settings › Sync across devices, enter `Rameshneralla/budget-manager-data` and the token, then click **Connect this device**.
+   - The first device uploads its data.
+   - Each further device downloads it.
+   - If both already have data, you choose which copy to keep.
+
+How it works (`client/src/local-backend/sync/`):
+- The whole SQLite file is stored as `budget.sqlite` in that repository, so ids, history and links are identical on every device.
+- Every change downloads the latest copy if needed, applies the change, and uploads it. If another device uploaded in between, the change is re-applied on top of that copy.
+- Opening the app, or returning to it, downloads changes from other devices.
+- Offline changes stay on the device and upload later. If the other copy also changed meanwhile, Settings asks which copy to keep.
+- The token is stored only in that browser (`localStorage`) and is sent only to `api.github.com`. **Disconnect this device** removes it.
+- The header's cloud icon shows the sync status.
 - **Backup Database** downloads the `.sqlite` file.
 
 Deploy an update:

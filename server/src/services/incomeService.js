@@ -3,8 +3,19 @@ const createRecordService = require('./createRecordService');
 const incomeRepository = require('../repositories/incomeRepository');
 const { validateIncomeInput } = require('../validators/incomeValidator');
 const { assertPaymentMethodExists } = require('./referenceChecks');
-const { monthKeyFromDate } = require('../utils/dates');
-const { ENTITY_TYPES, INCOME_STATUSES } = require('../constants');
+const { monthKeyFromDate, todayIsoDate } = require('../utils/dates');
+const { ENTITY_TYPES, INCOME_STATUSES, INCOME_RECEIVED_STATUS } = require('../constants');
+
+/**
+ * Changing the status from the status menu or bulk actions keeps the actual
+ * received date in step: Received -> today (unless already set); otherwise cleared.
+ */
+function applyIncomeStatusChange(income) {
+  if (income.status === INCOME_RECEIVED_STATUS) {
+    return { ...income, receivedDate: income.receivedDate || todayIsoDate() };
+  }
+  return { ...income, receivedDate: null };
+}
 
 const incomeService = createRecordService({
   entityType: ENTITY_TYPES.INCOME,
@@ -12,15 +23,18 @@ const incomeService = createRecordService({
   repository: incomeRepository,
   validateInput: validateIncomeInput,
   statuses: INCOME_STATUSES,
-  getMonthKey: (income) => monthKeyFromDate(income.date),
+  // The budget month is the month the income is due in.
+  getMonthKey: (income) => monthKeyFromDate(income.dueDate),
   describe: (income) => income.source,
   checkReferences: (income) => {
     if (income.paymentMethodId) {
       assertPaymentMethodExists(income.paymentMethodId);
     }
   },
+  applyStatusChange: applyIncomeStatusChange,
   auditedFields: [
-    'date',
+    'dueDate',
+    'receivedDate',
     'source',
     'amount',
     'purpose',

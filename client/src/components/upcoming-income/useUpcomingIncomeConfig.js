@@ -79,12 +79,13 @@ export function useUpcomingIncomeConfig() {
 
     return {
       title: 'Upcoming Income',
-      subtitle: 'Money you expect to receive',
+      subtitle: 'Money you expect to receive · marking it Received adds it to Income',
       singular: 'Upcoming income',
       pluralLabel: 'upcoming income',
       addLabel: 'Add Upcoming Income',
       emptyTitle: () => 'No upcoming income available.',
-      emptyMessage: 'Record income you are expecting so you can plan ahead.',
+      emptyMessage:
+        'Record income you are expecting so you can plan ahead. Marking it Received adds it to Income.',
       service: upcomingIncomeService,
       statuses,
       describe: (upcomingIncome) => upcomingIncome.source,
@@ -95,6 +96,14 @@ export function useUpcomingIncomeConfig() {
         amountColumn(),
         textColumn('purpose', 'Purpose', { wrap: true, showInCard: true }),
         statusColumn(),
+        {
+          key: 'incomeId',
+          label: 'In Income',
+          showInCard: true,
+          className: 'cell-muted',
+          // Set when marked Received: the amount was added to the Income page.
+          render: (upcomingIncome) => (upcomingIncome.incomeId ? 'Added ✓' : '—'),
+        },
         textColumn('notes', 'Notes', { wrap: true, showInCard: true }),
       ],
       card: {

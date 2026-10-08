@@ -12,6 +12,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { referenceService } from '../services/referenceService';
 import { MONTH_STORAGE_KEY } from '../constants';
+import { SYNC_EVENTS } from '../constants/syncEvents';
 import { readPreference, writePreference } from '../utils/browserStorage';
 import { getCurrentMonthKey, pickInitialMonth } from '../utils/months';
 
@@ -80,6 +81,12 @@ export function BudgetProvider({ children }) {
   }, []);
 
   const notifyDataChanged = useCallback(() => setDataVersion((version) => version + 1), []);
+
+  // GitHub Pages build: data synced from another device replaced this device's data.
+  useEffect(() => {
+    window.addEventListener(SYNC_EVENTS.DATA_REPLACED, notifyDataChanged);
+    return () => window.removeEventListener(SYNC_EVENTS.DATA_REPLACED, notifyDataChanged);
+  }, [notifyDataChanged]);
   const retryLoad = useCallback(() => setLoadAttempt((attempt) => attempt + 1), []);
 
   // An empty database still needs one month to work in (the current month).

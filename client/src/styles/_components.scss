@@ -248,3 +248,86 @@
     font-size: $font-size-xs;
   }
 }
+
+/* ----------------------------- Sync (GitHub) ------------------------------ */
+
+.sync-steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--app-text-secondary);
+  font-size: $font-size-sm;
+
+  li + li {
+    margin-top: $space-1;
+  }
+}
+
+.sync-status {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: $space-2 $space-4;
+  margin: 0;
+  font-size: $font-size-sm;
+
+  dt {
+    color: var(--app-text-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+  }
+
+  dd {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    margin: 0;
+    word-break: break-word;
+  }
+}
+
+.sync-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--app-neutral);
+
+  &--synced,
+  &--idle {
+    background: var(--app-positive);
+  }
+
+  &--syncing,
+  &--offline {
+    background: var(--app-warning);
+  }
+
+  &--conflict,
+  &--error {
+    background: var(--app-negative);
+  }
+}
+
+.sync-indicator {
+  &--ok {
+    color: var(--app-positive);
+  }
+
+  &--alert {
+    color: var(--app-negative);
+  }
+
+  &--syncing svg {
+    animation: sync-spin 1s linear infinite;
+  }
+}
+
+@keyframes sync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-indicator--syncing svg {
+    animation: none;
+  }
+}

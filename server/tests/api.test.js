@@ -129,7 +129,7 @@ describe('income', () => {
 
   it('supports create, full update and delete', async () => {
     const created = await api('POST', '/income', {
-      date: '2026-10-15',
+      dueDate: '2026-10-15',
       source: 'Freelance',
       amount: 2500.5,
       status: 'Pending',
@@ -154,15 +154,38 @@ describe('income', () => {
     assert.equal(missing.status, 404);
   });
 
+  it('fills the actual received date when marked Received and clears it when Pending', async () => {
+    const rent = await findIncome((row) => row.source === 'House Rent' && row.status === 'Pending');
+    assert.equal(rent.receivedDate, null);
+
+    const received = await api('PATCH', `/income/${rent.id}/status`, { status: 'Received' });
+    assert.match(received.body.data.receivedDate, /^\d{4}-\d{2}-\d{2}$/);
+
+    const pending = await api('PATCH', `/income/${rent.id}/status`, { status: 'Pending' });
+    assert.equal(pending.body.data.receivedDate, null);
+  });
+
+  it('only allows an actual received date when the status is Received', async () => {
+    const { status, body } = await api('POST', '/income', {
+      dueDate: '2026-10-20',
+      receivedDate: '2026-10-21',
+      source: 'Bonus',
+      amount: 1000,
+      status: 'Pending',
+    });
+    assert.equal(status, 400);
+    assert.match(body.error.details.receivedDate, /only be set when the status is Received/);
+  });
+
   it('returns field errors for invalid input', async () => {
     const { status, body } = await api('POST', '/income', {
-      date: '2026-02-30',
+      dueDate: '2026-02-30',
       source: '  ',
       amount: 0,
       status: 'Unknown',
     });
     assert.equal(status, 400);
-    assert.ok(body.error.details.date);
+    assert.ok(body.error.details.dueDate);
     assert.ok(body.error.details.source);
     assert.match(body.error.details.amount, /greater than 0/);
     assert.ok(body.error.details.status);
@@ -170,7 +193,7 @@ describe('income', () => {
 
   it('adds a month when a record is saved in it and removes it when emptied', async () => {
     const created = await api('POST', '/income', {
-      date: '2026-11-01',
+      dueDate: '2026-11-01',
       source: 'Salary',
       amount: 80000,
       status: 'Pending',
@@ -202,9 +225,28 @@ describe('expenses', () => {
     assert.equal(summary.paidExpenses, 54200);
   });
 
+  it('keeps the actual paid date in step with the status', async () => {
+    const { body } = await api('GET', '/expenses?month=2026-10');
+    const internet = body.data.find((row) => row.payee === 'Internet');
+    assert.equal(internet.paidDate, '2026-10-05');
+
+    const pending = await api('PATCH', `/expenses/${internet.id}/status`, { status: 'Pending' });
+    assert.equal(pending.body.data.paidDate, null);
+    const paid = await api('PATCH', `/expenses/${internet.id}/status`, { status: 'Paid' });
+    assert.match(paid.body.data.paidDate, /^\d{4}-\d{2}-\d{2}$/);
+
+    const invalid = await api('PUT', `/expenses/${internet.id}`, {
+      ...paid.body.data,
+      status: 'Pending',
+    });
+    assert.equal(invalid.status, 400);
+    assert.ok(invalid.body.error.details.paidDate);
+    await api('PUT', `/expenses/${internet.id}`, { ...paid.body.data, paidDate: '2026-10-05' });
+  });
+
   it('requires a valid category and payment method', async () => {
     const { status, body } = await api('POST', '/expenses', {
-      date: '2026-10-10',
+      dueDate: '2026-10-10',
       categoryId: 999,
       payee: 'Test',
       amount: 100,
@@ -220,7 +262,7 @@ describe('expenses', () => {
     const ids = [];
     for (const amount of [100, 200, 300]) {
       const created = await api('POST', '/expenses', {
-        date: '2026-10-20',
+        dueDate: '2026-10-20',
         categoryId: 3,
         payee: `Bulk ${amount}`,
         amount,
@@ -250,16 +292,60 @@ describe('expenses', () => {
 });
 
 describe('upcoming income', () => {
-  it('changes Loan Interest from Expected to Received', async () => {
+  it('adds Loan Interest to Income when marked Received, and removes it when changed back', async () => {
     const { body } = await api('GET', '/upcoming-income?month=2026-10');
     const interest = body.data.find((row) => row.source === 'Loan Interest');
     assert.equal(interest.status, 'Expected');
+    assert.equal(interest.incomeId, null);
+    const summaryBefore = await getSummary();
 
     const changed = await api('PATCH', `/upcoming-income/${interest.id}/status`, {
       status: 'Received',
     });
     assert.equal(changed.body.data.status, 'Received');
-    assert.equal((await getSummary()).upcomingIncomeOutstanding, 9000);
+    assert.ok(changed.body.data.incomeId, 'linked income id is returned');
+
+    const linked = await findIncome((row) => row.id === changed.body.data.incomeId);
+    assert.equal(linked.source, 'Loan Interest');
+    assert.equal(linked.amount, 3000);
+    assert.equal(linked.status, 'Received');
+    assert.equal(linked.dueDate, '2026-10-28'); // the expected date
+    assert.match(linked.receivedDate, /^\d{4}-\d{2}-\d{2}$/);
+
+    let summary = await getSummary();
+    assert.equal(summary.upcomingIncomeOutstanding, 9000);
+    assert.equal(summary.totalIncome, summaryBefore.totalIncome + 3000);
+    assert.equal(summary.receivedIncome, summaryBefore.receivedIncome + 3000);
+
+    // Editing while Received updates the linked income.
+    const edited = await api('PUT', `/upcoming-income/${interest.id}`, {
+      ...changed.body.data,
+      amount: 3500,
+    });
+    assert.equal(edited.status, 200);
+    assert.equal((await findIncome((row) => row.id === linked.id)).amount, 3500);
+
+    // Back to Expected: the income record is removed and totals return.
+    const reverted = await api('PATCH', `/upcoming-income/${interest.id}/status`, {
+      status: 'Expected',
+    });
+    assert.equal(reverted.body.data.incomeId, null);
+    assert.equal(await findIncome((row) => row.id === linked.id), undefined);
+    summary = await getSummary();
+    assert.equal(summary.totalIncome, summaryBefore.totalIncome);
+    await api('PUT', `/upcoming-income/${interest.id}`, { ...reverted.body.data, amount: 3000 });
+  });
+
+  it('bulk-marks upcoming income Received and adds each to Income', async () => {
+    const { body } = await api('GET', '/upcoming-income?month=2026-10');
+    const ids = body.data.map((row) => row.id);
+    const totalBefore = (await getSummary()).totalIncome;
+
+    await api('POST', '/upcoming-income/bulk-status', { ids, status: 'Received' });
+    assert.equal((await getSummary()).totalIncome, totalBefore + 9000 + 3000);
+
+    await api('POST', '/upcoming-income/bulk-status', { ids, status: 'Expected' });
+    assert.equal((await getSummary()).totalIncome, totalBefore);
   });
 
   it('rejects an expected date outside the selected month', async () => {
@@ -284,6 +370,51 @@ describe('data management and errors', () => {
     assert.equal(imported.status, 200);
     assert.deepEqual(imported.body.data, { months: 1, income: 3, expenses: 11, upcomingIncome: 2 });
     assert.equal((await getSummary()).totalExpenses, 54200);
+  });
+
+  it('keeps upcoming -> income links through export and import', async () => {
+    const { body } = await api('GET', '/upcoming-income?month=2026-10');
+    const interest = body.data.find((row) => row.source === 'Loan Interest');
+    await api('PATCH', `/upcoming-income/${interest.id}/status`, { status: 'Received' });
+
+    const exported = await fetch(`${baseUrl}/api/data/export`).then((res) => res.json());
+    assert.equal(exported.version, 2);
+    const exportedInterest = exported.upcomingIncome.find((row) => row.source === 'Loan Interest');
+    assert.equal(exported.income[exportedInterest.incomeIndex].source, 'Loan Interest');
+
+    await api('POST', '/data/import', exported);
+    const after = (await api('GET', '/upcoming-income?month=2026-10')).body.data;
+    const importedInterest = after.find((row) => row.source === 'Loan Interest');
+    assert.ok(importedInterest.incomeId);
+
+    // Changing it back still removes the right income record.
+    await api('PATCH', `/upcoming-income/${importedInterest.id}/status`, { status: 'Expected' });
+    assert.equal((await getSummary()).totalIncome, 91000);
+  });
+
+  it('still imports version 1 files (one "date" per record = due date)', async () => {
+    const current = await fetch(`${baseUrl}/api/data/export`).then((res) => res.json());
+    const versionOne = {
+      ...current,
+      version: 1,
+      income: current.income.map(({ dueDate, receivedDate: _r, ...rest }) => ({
+        ...rest,
+        date: dueDate,
+      })),
+      expenses: current.expenses.map(({ dueDate, paidDate: _p, ...rest }) => ({
+        ...rest,
+        date: dueDate,
+      })),
+      upcomingIncome: current.upcomingIncome.map(({ incomeIndex: _i, ...rest }) => rest),
+    };
+    const imported = await api('POST', '/data/import', versionOne);
+    assert.equal(imported.status, 200);
+    const salary = await findIncome((row) => row.source === 'Salary');
+    assert.equal(salary.dueDate, '2026-10-01');
+    assert.equal(salary.receivedDate, null);
+    assert.equal((await getSummary()).totalExpenses, 54200);
+
+    await api('POST', '/data/import', current); // restore actual dates for later tests
   });
 
   it('rejects an import file with invalid records without changing data', async () => {

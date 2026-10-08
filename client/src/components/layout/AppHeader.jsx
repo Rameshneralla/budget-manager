@@ -18,6 +18,7 @@ import {
 import RbmLogo from '../common/RbmLogo';
 import ThemeToggle from '../common/ThemeToggle';
 import InstallApp from '../common/InstallApp';
+import SyncIndicator from '../common/SyncIndicator';
 import { useBudget } from '../../context/BudgetContext';
 import { useAuth } from '../../context/AuthContext';
 import { APP_NAME, DEFAULT_OWNER_NAME, ROUTES } from '../../constants';
@@ -77,6 +78,7 @@ export default function AppHeader() {
                 {formatMonthLabel(selectedMonth)}
               </span>
             )}
+            <SyncIndicator />
             <InstallApp />
             <ThemeToggle />
             {authRequired && (

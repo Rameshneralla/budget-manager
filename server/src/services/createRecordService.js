@@ -30,6 +30,10 @@ const {
  * @param {Function} config.describe         (record) => short label, e.g. 'House Rent'
  * @param {Function} [config.checkReferences] (cleanInput) => void, throws ValidationError
  * @param {string[]} config.auditedFields    fields compared when logging an update
+ * @param {Function} [config.applyStatusChange] (record with new status, previous record) => record
+ *                   to save - e.g. fill in the actual received/paid date
+ * @param {Function} [config.afterWrite]  (savedRecord, previousRecord | null) => void, runs in the
+ *                   same transaction after every create / update / status change
  */
 function createRecordService(config) {
   const {
@@ -42,6 +46,8 @@ function createRecordService(config) {
     describe,
     checkReferences = () => {},
     auditedFields,
+    applyStatusChange = (record) => record,
+    afterWrite = () => {},
   } = config;
 
   const notFoundMessage = `${entityLabel} record not found. It may have been deleted.`;
@@ -81,6 +87,15 @@ function createRecordService(config) {
     });
   }
 
+  /** Saves a status change (plus any fields applyStatusChange adds) and runs afterWrite. */
+  function saveStatusChange(record, status) {
+    const changed = applyStatusChange({ ...record, status }, record);
+    const updated = repository.update(record.id, changed);
+    logStatusChange(record, record.status, status);
+    afterWrite(updated, record);
+    return updated;
+  }
+
   function logDeletion(record) {
     auditService.log({
       entityType,
@@ -115,7 +130,8 @@ function createRecordService(config) {
           action: AUDIT_ACTIONS.CREATED,
           summary: `${entityLabel} "${describe(created)}" created`,
         });
-        return created;
+        afterWrite(created, null);
+        return repository.findById(created.id);
       });
     },
 
@@ -135,7 +151,8 @@ function createRecordService(config) {
           summary: `${entityLabel} "${describe(updated)}" updated`,
           details: auditService.diffRecords(before, updated, auditedFields),
         });
-        return updated;
+        afterWrite(updated, before);
+        return repository.findById(id);
       });
     },
 
@@ -148,8 +165,7 @@ function createRecordService(config) {
         if (before.status === status) {
           return before;
         }
-        repository.updateStatus(id, status);
-        logStatusChange(before, before.status, status);
+        saveStatusChange(before, status);
         return repository.findById(id);
       });
     },
@@ -159,11 +175,10 @@ function createRecordService(config) {
 
       return runInTransaction(() => {
         const records = findAllExisting(ids);
-        const updatedCount = repository.updateStatusByIds(ids, status);
         records
           .filter((record) => record.status !== status)
-          .forEach((record) => logStatusChange(record, record.status, status));
-        return { updatedCount, status };
+          .forEach((record) => saveStatusChange(record, status));
+        return { updatedCount: records.length, status };
       });
     },
 

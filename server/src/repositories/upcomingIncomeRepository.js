@@ -6,7 +6,7 @@ const { createRecordTableHelpers, placeholdersFor, SQL_NOW } = require('./record
 const SELECT_UPCOMING_INCOME = `
   SELECT
     u.id, u.month_key, u.expected_date, u.source, u.amount_paise, u.purpose,
-    u.status, u.notes, u.created_at, u.updated_at
+    u.status, u.notes, u.income_id, u.created_at, u.updated_at
   FROM upcoming_income u`;
 
 // Records without an expected date sort after dated ones.
@@ -25,6 +25,8 @@ function toUpcomingIncome(row) {
     purpose: row.purpose,
     status: row.status,
     notes: row.notes,
+    // Income record created when this was marked Received (null otherwise).
+    incomeId: row.income_id,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -90,6 +92,11 @@ const upcomingIncomeRepository = {
       )
       .run({ ...toRowParams(upcomingIncome), id });
     return this.findById(id);
+  },
+
+  /** Links (or unlinks, with null) the income record created from this upcoming income. */
+  setIncomeId(id, incomeId) {
+    getDb().prepare('UPDATE upcoming_income SET income_id = ? WHERE id = ?').run(incomeId, id);
   },
 };
 

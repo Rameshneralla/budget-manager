@@ -18,6 +18,16 @@ import auditService from '../../../server/src/services/auditService';
 import dataService from '../../../server/src/services/dataService';
 import errors from '../../../server/src/utils/errors';
 import { getBrowserDatabase, persistBrowserDatabase } from './browserDatabase';
+import {
+  connect,
+  disconnect,
+  ensureStartupSync,
+  getSyncStatus,
+  resolveConflict,
+  runSyncedWrite,
+  syncNow,
+} from './sync/syncManager';
+import { SyncError } from './sync/githubStore';
 import { downloadBytes } from '../utils/fileDownload';
 
 const { AppError, NotFoundError } = errors;
@@ -27,6 +37,9 @@ const RECORD_SERVICES = {
   expenses: expenseService,
   'upcoming-income': upcomingIncomeService,
 };
+
+// POST requests that do not change budget data (so they are not synced).
+const NON_CHANGING_REQUESTS = new Set(['POST /data/backup']);
 
 const DATABASE_ERROR_MESSAGE = 'A database error occurred. Your changes were not saved.';
 
@@ -136,17 +149,55 @@ function toErrorResponse(error) {
   };
 }
 
+/** Settings > Sync across devices (browser version only). */
+async function handleSyncRoute(method, path, body = {}) {
+  const key = `${method} ${path}`;
+  switch (key) {
+    case 'GET /sync/status':
+      return ok(getSyncStatus());
+    case 'POST /sync/connect': {
+      const { owner, repo, token, choice = null } = body;
+      if (![owner, repo, token].every((value) => typeof value === 'string' && value.trim())) {
+        throw new AppError('Repository and access token are required.', 400, 'VALIDATION_ERROR');
+      }
+      return ok(await connect({ owner, repo, token }, choice));
+    }
+    case 'POST /sync/now':
+      return ok(await syncNow());
+    case 'POST /sync/resolve':
+      return ok(await resolveConflict(body.keep === 'cloud' ? 'cloud' : 'device'));
+    case 'POST /sync/disconnect':
+      return ok(disconnect());
+    default:
+      throw new NotFoundError(`API route not found: ${method} /api${path}`);
+  }
+}
+
 export async function handleLocalRequest(method, path, query = {}, body = undefined) {
-  const adapter = await getBrowserDatabase();
   try {
     // JSON round-trip gives services the same plain data an HTTP request would.
     const requestBody = body === undefined ? undefined : JSON.parse(JSON.stringify(body));
-    const response = route(method, path, query ?? {}, requestBody, adapter);
-    if (method !== 'GET') {
-      await persistBrowserDatabase();
+    if (path.startsWith('/sync/')) {
+      return await handleSyncRoute(method, path, requestBody);
     }
+
+    await getBrowserDatabase();
+    await ensureStartupSync(); // show the latest synced data on the first screen
+
+    const changesData = method !== 'GET' && !NON_CHANGING_REQUESTS.has(`${method} ${path}`);
+    if (!changesData) {
+      return route(method, path, query ?? {}, requestBody, await getBrowserDatabase());
+    }
+    // Changes are applied on top of the latest synced copy and then uploaded.
+    const response = await runSyncedWrite(() =>
+      route(method, path, query ?? {}, requestBody, null)
+    );
+    await persistBrowserDatabase();
     return response;
   } catch (error) {
+    if (error instanceof SyncError) {
+      return { status: 400, payload: { error: { code: 'SYNC_ERROR', message: error.message } } };
+    }
     return toErrorResponse(error);
   }
 }

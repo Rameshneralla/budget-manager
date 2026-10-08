@@ -20,18 +20,21 @@ import {
   dateColumn,
   dateRangeFilters,
   lookupToOptions,
+  onlyWithStatus,
   selectFilter,
   statusColumn,
   textColumn,
   toOptions,
 } from '../common/records/recordConfigHelpers';
 
-const DEFAULT_INCOME_STATUS = 'Received';
+const RECEIVED_STATUS = 'Received';
+const DEFAULT_INCOME_STATUS = RECEIVED_STATUS;
 
 function toFormValues(income, monthKey) {
   if (!income) {
     return {
-      date: defaultDateForMonth(monthKey),
+      dueDate: defaultDateForMonth(monthKey),
+      receivedDate: '',
       source: '',
       amount: '',
       status: DEFAULT_INCOME_STATUS,
@@ -42,7 +45,8 @@ function toFormValues(income, monthKey) {
     };
   }
   return {
-    date: income.date,
+    dueDate: income.dueDate,
+    receivedDate: toInputValue(income.receivedDate),
     source: income.source,
     amount: toInputValue(income.amount),
     status: income.status,
@@ -55,7 +59,8 @@ function toFormValues(income, monthKey) {
 
 function toPayload(values) {
   return {
-    date: values.date,
+    dueDate: values.dueDate,
+    receivedDate: toNullableText(values.receivedDate),
     source: values.source.trim(),
     amount: Number(values.amount),
     status: values.status,
@@ -87,9 +92,10 @@ export function useIncomeConfig() {
       describe: (income) => income.source,
 
       columns: [
-        dateColumn('date', 'Date'),
+        dateColumn('dueDate', 'Due Date'),
         textColumn('source', 'Source', { sortable: true, primary: true }),
         amountColumn(),
+        dateColumn('receivedDate', 'Received Date', { showInCard: true }),
         textColumn('purpose', 'Purpose', { wrap: true, showInCard: true }),
         statusColumn(),
         textColumn('paymentMethod', 'Payment Method', { sortable: true, showInCard: true }),
@@ -98,18 +104,18 @@ export function useIncomeConfig() {
       ],
       card: {
         title: (income) => income.source,
-        subtitle: (income) => formatDate(income.date),
+        subtitle: (income) => `Due ${formatDate(income.dueDate)}`,
         amount: (income) => formatCurrency(income.amount),
       },
-      defaultSort: { key: 'date', direction: SORT_DIRECTIONS.ASC },
+      defaultSort: { key: 'dueDate', direction: SORT_DIRECTIONS.ASC },
 
       searchFields: ['source', 'purpose', 'reference', 'notes'],
       searchLabel: 'Search',
       searchPlaceholder: 'Search source, purpose, reference...',
-      filters: [selectFilter('status', 'Status', statusOptions), ...dateRangeFilters('date')],
+      filters: [selectFilter('status', 'Status', statusOptions), ...dateRangeFilters('dueDate')],
 
       formFields: [
-        { name: 'date', label: 'Date', type: 'date', required: true },
+        { name: 'dueDate', label: 'Due Date', type: 'date', required: true },
         {
           name: 'source',
           label: 'Source',
@@ -119,6 +125,13 @@ export function useIncomeConfig() {
         },
         { name: 'amount', label: 'Amount', type: 'amount', required: true },
         { name: 'status', label: 'Status', type: 'select', required: true, options: statusOptions },
+        {
+          name: 'receivedDate',
+          label: 'Actual Received Date',
+          type: 'date',
+          helpText: 'When the money arrived. Filled in automatically when marked Received.',
+          validate: onlyWithStatus([RECEIVED_STATUS], 'Actual received date'),
+        },
         {
           name: 'paymentMethodId',
           label: 'Payment Method',
