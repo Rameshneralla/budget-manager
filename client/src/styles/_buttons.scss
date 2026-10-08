@@ -1,0 +1,89 @@
+// Button styles: Bootstrap buttons re-coloured to the app palette + icon buttons.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  min-height: $touch-target;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-sm;
+}
+
+.btn-sm {
+  min-height: 2rem;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--app-primary);
+  --bs-btn-border-color: var(--app-primary);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--app-primary) 88%, #000);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--app-primary) 88%, #000);
+  --bs-btn-active-bg: color-mix(in srgb, var(--app-primary) 80%, #000);
+  --bs-btn-active-border-color: color-mix(in srgb, var(--app-primary) 80%, #000);
+  --bs-btn-disabled-bg: var(--app-primary);
+  --bs-btn-disabled-border-color: var(--app-primary);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--app-text-secondary);
+  --bs-btn-border-color: var(--app-border-strong);
+  --bs-btn-hover-color: var(--app-text);
+  --bs-btn-hover-bg: var(--app-surface-hover);
+  --bs-btn-hover-border-color: var(--app-border-strong);
+  --bs-btn-active-color: var(--app-text);
+  --bs-btn-active-bg: var(--app-surface-hover);
+  --bs-btn-active-border-color: var(--app-border-strong);
+  background: var(--app-surface);
+}
+
+.btn-danger {
+  --bs-btn-bg: var(--app-negative);
+  --bs-btn-border-color: var(--app-negative);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--app-negative) 88%, #000);
+  --bs-btn-hover-border-color: color-mix(in srgb, var(--app-negative) 88%, #000);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--app-negative);
+  --bs-btn-border-color: color-mix(in srgb, var(--app-negative) 45%, transparent);
+  --bs-btn-hover-bg: var(--app-negative);
+  --bs-btn-hover-border-color: var(--app-negative);
+}
+
+// Square icon-only buttons (edit / delete in table rows, theme toggle).
+.icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: $touch-target;
+  height: $touch-target;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  background: transparent;
+  color: var(--app-text-muted);
+  transition:
+    background $transition-fast,
+    color $transition-fast;
+
+  &:hover {
+    background: var(--app-surface-hover);
+    color: var(--app-text);
+  }
+
+  &--danger:hover {
+    background: var(--app-negative-soft);
+    color: var(--app-negative);
+  }
+
+  &--bordered {
+    border-color: var(--app-border);
+  }
+
+  svg {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+}

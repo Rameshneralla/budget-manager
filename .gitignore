@@ -1,0 +1,17 @@
+node_modules/
+client/dist/
+
+# Environment files (never commit real configuration)
+.env
+server/.env
+
+# Local SQLite database and backups (your personal financial data)
+database/*.sqlite
+database/*.sqlite-*
+database/backups/
+
+*.log
+.DS_Store
+
+# Real budget data used for seeding (never commit personal finances)
+*.private.json

@@ -1,0 +1,368 @@
+// Data tables (desktop/tablet), record cards (mobile), filter bar, bulk bar, pagination.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.records-panel {
+  @include surface-card;
+  overflow: hidden;
+}
+
+/* --------------------------------- Filter bar ------------------------------ */
+
+.filter-bar {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: $space-3;
+  padding: $space-4;
+  border-bottom: 1px solid var(--app-border);
+
+  @include media-up(sm) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @include media-up(lg) {
+    grid-template-columns: minmax(14rem, 2fr) repeat(auto-fit, minmax(9rem, 1fr));
+    align-items: end;
+  }
+
+  &__search {
+    @include media-up(sm) {
+      grid-column: 1 / -1;
+    }
+
+    @include media-up(lg) {
+      grid-column: auto;
+    }
+  }
+
+  .form-label {
+    margin-bottom: $space-1;
+    font-size: $font-size-xs;
+  }
+}
+
+// Wrapper for the filter controls; `contents` lets them sit directly in the filter-bar grid.
+.filter-bar__controls {
+  display: contents;
+}
+
+.filter-bar__reset {
+  @include media-up(sm) {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  @include media-up(lg) {
+    grid-column: auto;
+    justify-self: stretch;
+  }
+}
+
+/* --------------------------------- Bulk bar -------------------------------- */
+
+.bulk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-primary-soft);
+
+  &__count {
+    font-weight: $font-weight-semibold;
+    color: var(--app-primary);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+    margin-left: auto;
+
+    @include media-down(sm) {
+      width: 100%;
+      margin-left: 0;
+
+      > * {
+        flex: 1 1 auto;
+      }
+    }
+  }
+}
+
+/* ---------------------------------- Table ---------------------------------- */
+
+.data-table-scroll {
+  // `relative` keeps absolutely positioned children (visually-hidden captions,
+  // labels) inside the scroll box instead of widening the page.
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden; // status menus use fixed positioning, so nothing needs to escape vertically
+  -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+  --bs-table-bg: transparent;
+  --bs-table-hover-bg: var(--app-surface-hover);
+  width: 100%;
+  margin: 0;
+  font-size: $font-size-sm;
+  color: var(--app-text);
+
+  th,
+  td {
+    padding: $space-3;
+    border-color: var(--app-border);
+    vertical-align: middle;
+  }
+
+  thead th {
+    background: var(--app-surface-muted);
+    color: var(--app-text-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    transition: background $transition-fast;
+
+    &.is-selected {
+      background: var(--app-primary-soft);
+    }
+  }
+
+  .col-select {
+    width: 2.75rem;
+  }
+
+  .col-actions {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .cell-primary {
+    font-weight: $font-weight-semibold;
+  }
+
+  .cell-wrap {
+    min-width: 10rem;
+    max-width: 18rem;
+  }
+
+  .cell-muted {
+    color: var(--app-text-muted);
+  }
+}
+
+.sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-1;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+
+  &:hover,
+  &.is-active {
+    color: var(--app-text);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+/* ----------------------------- Mobile record cards ------------------------- */
+
+.record-cards {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.record-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: $space-3;
+  padding: $space-4;
+  border-bottom: 1px solid var(--app-border);
+
+  &:last-child {
+    border-bottom: 0;
+  }
+
+  &.is-selected {
+    background: var(--app-primary-soft);
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $space-3;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    word-break: break-word;
+  }
+
+  &__subtitle {
+    margin: 2px 0 0;
+    color: var(--app-text-muted);
+    font-size: $font-size-sm;
+  }
+
+  &__amount {
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+  }
+
+  &__details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $space-2 $space-3;
+    margin: $space-3 0 0;
+    font-size: $font-size-sm;
+
+    dt {
+      color: var(--app-text-muted);
+      font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
+    }
+
+    dd {
+      margin: 0;
+      word-break: break-word;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-2;
+    margin-top: $space-3;
+  }
+}
+
+.select-all-row {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-3 $space-4;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface-muted);
+  font-size: $font-size-sm;
+}
+
+/* -------------------------------- Pagination ------------------------------- */
+
+.table-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-3;
+  padding: $space-3 $space-4;
+  border-top: 1px solid var(--app-border);
+  color: var(--app-text-muted);
+  font-size: $font-size-sm;
+
+  .form-select {
+    width: auto;
+  }
+
+  .pagination {
+    margin: 0;
+    --bs-pagination-color: var(--app-text-secondary);
+    --bs-pagination-bg: var(--app-surface);
+    --bs-pagination-border-color: var(--app-border);
+    --bs-pagination-hover-bg: var(--app-surface-hover);
+    --bs-pagination-hover-color: var(--app-text);
+    --bs-pagination-active-bg: var(--app-primary);
+    --bs-pagination-active-border-color: var(--app-primary);
+    --bs-pagination-disabled-bg: var(--app-surface-muted);
+    --bs-pagination-disabled-color: var(--app-text-muted);
+    --bs-pagination-disabled-border-color: var(--app-border);
+  }
+}
+
+/* ------------------------------ Grouped records ---------------------------- */
+
+// Section heading with subtotal (e.g. expenses grouped by category).
+.group-row th,
+.group-row--card {
+  padding: $space-2 $space-3;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-surface-muted);
+}
+
+.group-row--card {
+  padding-inline: $space-4;
+}
+
+.group-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: $space-1 $space-3;
+  font-size: $font-size-sm;
+  text-transform: none;
+  letter-spacing: normal;
+
+  &__label {
+    color: var(--app-text);
+    font-weight: $font-weight-semibold;
+  }
+
+  &__count {
+    color: var(--app-text-muted);
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+  }
+
+  &__total {
+    color: var(--app-text);
+    font-weight: $font-weight-bold;
+  }
+}
+
+// On cards the subtotal sits on the right, aligned with each card's amount.
+// (In the wide, scrollable table it stays next to the group name so it is always visible.)
+.group-row--card .group-heading__total {
+  margin-left: auto;
+}
+
+.filter-bar__toggle {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+  min-height: $touch-target;
+  margin: 0;
+  padding-left: 0;
+
+  .form-check-input {
+    float: none;
+    margin-left: 0;
+  }
+
+  .form-check-label {
+    font-size: $font-size-sm;
+    color: var(--app-text-secondary);
+  }
+}

@@ -1,0 +1,30 @@
+// Entry point for all custom styles. Bootstrap (layout/grid/utilities) is
+// imported before this file in main.jsx; these partials style the app itself.
+//
+//   _variables   design tokens (colours, spacing, typography, breakpoints)
+//   _mixins      media queries and reusable style snippets
+//   _theme       light/dark CSS custom properties + Bootstrap variable mapping
+//   _base        element defaults
+//   _layout      header, navigation, page header, footer
+//   _buttons     buttons and icon buttons
+//   _cards       stat cards, panels, summary strip
+//   _tables      data tables, mobile record cards, filters, bulk bar, pagination
+//   _forms       inputs, labels, validation
+//   _badges      status and type badges
+//   _charts      chart containers and breakdown tables
+//   _components  loading/empty/error states, modals, dropdowns, toasts
+//   _login       sign-in screen
+//   _responsive  small-screen overrides
+
+@use 'theme';
+@use 'base';
+@use 'layout';
+@use 'buttons';
+@use 'cards';
+@use 'tables';
+@use 'forms';
+@use 'badges';
+@use 'charts';
+@use 'components';
+@use 'login';
+@use 'responsive';

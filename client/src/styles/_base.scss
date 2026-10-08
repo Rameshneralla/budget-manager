@@ -1,0 +1,75 @@
+// Global element defaults: body, headings, links, focus, numbers.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--app-app-bg);
+  color: var(--app-text);
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  overflow-x: hidden; // the page itself must never scroll sideways
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--app-text);
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-tight;
+  letter-spacing: -0.01em;
+}
+
+a {
+  color: var(--app-primary);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+:focus-visible {
+  @include focus-ring;
+}
+
+.text-muted,
+.text-secondary {
+  color: var(--app-text-muted) !important;
+}
+
+// Money and counts line up in columns.
+.amount,
+.tabular {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+// Lets flex/grid children shrink so long text wraps instead of overflowing.
+.min-w-0 {
+  min-width: 0;
+}
+
+.amount--negative {
+  color: var(--app-negative);
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: $space-4;
+  z-index: 2000;
+  padding: $space-2 $space-4;
+  border-radius: $radius-sm;
+  background: var(--app-primary);
+  color: #fff;
+
+  &:focus {
+    top: $space-2;
+  }
+}

@@ -1,0 +1,203 @@
+// App shell: header, navigation, main content area, page header, footer.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-container {
+  width: 100%;
+  max-width: $content-max-width;
+  margin-inline: auto;
+  padding-inline: $space-4;
+
+  @include media-up(md) {
+    padding-inline: $space-5;
+  }
+}
+
+/* ---------------------------------- Header -------------------------------- */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background: var(--app-surface);
+  border-bottom: 1px solid var(--app-border);
+
+  .navbar {
+    min-height: $header-height;
+    padding-block: $space-2;
+  }
+
+  .navbar-toggler {
+    border-color: var(--app-border);
+    padding: $space-1 $space-2;
+  }
+}
+
+.app-brand {
+  display: flex;
+  align-items: center;
+  gap: $space-3;
+  min-width: 0;
+  color: var(--app-text);
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
+    color: var(--app-text);
+  }
+
+  &__logo {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: $radius-md;
+    background: var(--app-primary);
+    color: #fff;
+    font-size: 1.15rem;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: $line-height-tight;
+  }
+
+  &__name {
+    @include truncate;
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+  }
+
+  &__tagline {
+    @include truncate;
+    font-size: $font-size-xs;
+    color: var(--app-text-muted);
+  }
+}
+
+.app-nav {
+  gap: $space-1;
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-2 $space-3;
+    border-radius: $radius-sm;
+    color: var(--app-text-secondary);
+    font-weight: $font-weight-medium;
+    transition:
+      background $transition-fast,
+      color $transition-fast;
+
+    &:hover {
+      background: var(--app-surface-hover);
+      color: var(--app-text);
+      text-decoration: none;
+    }
+
+    &.active {
+      background: var(--app-primary-soft);
+      color: var(--app-primary);
+    }
+  }
+
+  @include media-down(lg) {
+    padding-block: $space-3;
+  }
+}
+
+.app-header__tools {
+  display: flex;
+  align-items: center;
+  gap: $space-2;
+
+  @include media-down(lg) {
+    justify-content: space-between;
+    padding-block: $space-3;
+    border-top: 1px solid var(--app-border);
+  }
+}
+
+.month-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-2;
+  padding: $space-1 $space-3;
+  border-radius: $radius-pill;
+  background: var(--app-surface-muted);
+  border: 1px solid var(--app-border);
+  color: var(--app-text-secondary);
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+/* ----------------------------------- Main --------------------------------- */
+
+.app-main {
+  flex: 1;
+  padding-block: $space-5 $space-7;
+}
+
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: $space-4;
+  margin-bottom: $space-5;
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-xl;
+  }
+
+  &__subtitle {
+    margin: $space-1 0 0;
+    color: var(--app-text-muted);
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: $space-3;
+
+    @include media-down(sm) {
+      width: 100%;
+
+      > * {
+        flex: 1 1 100%;
+      }
+    }
+  }
+}
+
+.section-title {
+  margin: 0 0 $space-3;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--app-text-muted);
+}
+
+/* ---------------------------------- Footer -------------------------------- */
+
+.app-footer {
+  padding-block: $space-4;
+  border-top: 1px solid var(--app-border);
+  background: var(--app-surface);
+  color: var(--app-text-muted);
+  font-size: $font-size-sm;
+}

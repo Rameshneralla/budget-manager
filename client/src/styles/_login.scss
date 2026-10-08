@@ -1,0 +1,45 @@
+// Sign-in screen.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.login-page {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: $space-4;
+  background: var(--app-app-bg);
+
+  &__theme {
+    position: absolute;
+    top: $space-4;
+    right: $space-4;
+  }
+}
+
+.login-card {
+  @include surface-card;
+  width: 100%;
+  max-width: 24rem;
+  padding: $space-6 $space-5;
+  box-shadow: var(--app-shadow-md);
+
+  @include media-down(sm) {
+    padding: $space-5 $space-4;
+  }
+
+  &__brand {
+    margin-bottom: $space-5;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-xl;
+  }
+
+  &__subtitle {
+    margin: $space-1 0 $space-5;
+    color: var(--app-text-muted);
+    font-size: $font-size-sm;
+  }
+}

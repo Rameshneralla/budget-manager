@@ -1,0 +1,40 @@
+@use 'sass:map';
+@use 'variables' as *;
+
+// Usage: @include media-up(md) { ... }  -> min-width: 768px
+@mixin media-up($name) {
+  @media (min-width: map.get($breakpoints, $name)) {
+    @content;
+  }
+}
+
+// Usage: @include media-down(md) { ... } -> max-width: 767.98px
+@mixin media-down($name) {
+  @media (max-width: (map.get($breakpoints, $name) - 0.02px)) {
+    @content;
+  }
+}
+
+@mixin surface-card {
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: $radius-lg;
+  box-shadow: var(--app-shadow-sm);
+}
+
+@mixin focus-ring {
+  outline: 2px solid var(--app-primary);
+  outline-offset: 2px;
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Tinted pill used by status badges and icon chips.
+@mixin tone($name) {
+  color: var(--app-#{$name});
+  background: var(--app-#{$name}-soft);
+}

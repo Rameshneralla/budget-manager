@@ -1,0 +1,37 @@
+// Small-screen adjustments that apply across the app (320px and up).
+@use 'variables' as *;
+@use 'mixins' as *;
+
+@include media-down(sm) {
+  .app-main {
+    padding-block: $space-4 $space-6;
+  }
+
+  .page-header__title {
+    font-size: $font-size-lg;
+  }
+
+  .stat-card--hero .stat-card__value {
+    font-size: $font-size-xl;
+  }
+
+  .modal-dialog {
+    margin: $space-2;
+  }
+
+  .Toastify__toast-container {
+    width: calc(100vw - #{$space-4});
+    left: $space-2;
+  }
+}
+
+// Very narrow phones (320px): keep the brand from crowding the menu button.
+@media (max-width: 359.98px) {
+  .app-brand__tagline {
+    display: none;
+  }
+
+  .app-container {
+    padding-inline: $space-3;
+  }
+}

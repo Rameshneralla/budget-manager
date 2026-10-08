@@ -1,0 +1,85 @@
+// Status badges. Every status shows an icon + text, never colour alone.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: $radius-pill;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: 1.4;
+  white-space: nowrap;
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &--positive {
+    @include tone(positive);
+  }
+  &--warning {
+    @include tone(warning);
+  }
+  &--info {
+    @include tone(info);
+  }
+  &--neutral {
+    @include tone(neutral);
+  }
+}
+
+// The badge doubles as a dropdown toggle for quick status changes.
+.status-menu {
+  .dropdown-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-1;
+    padding: 0;
+    border: 0;
+    border-radius: $radius-pill;
+    background: none;
+
+    &::after {
+      display: none; // we render our own chevron inside the badge
+    }
+
+    &:focus-visible {
+      @include focus-ring;
+    }
+  }
+
+  .status-badge {
+    cursor: pointer;
+    transition: filter $transition-fast;
+
+    &:hover {
+      filter: brightness(0.96);
+    }
+  }
+
+  .dropdown-menu {
+    min-width: 10rem;
+    font-size: $font-size-sm;
+  }
+
+  .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+  }
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--app-border);
+  border-radius: $radius-sm;
+  color: var(--app-text-secondary);
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}

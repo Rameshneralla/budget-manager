@@ -1,0 +1,203 @@
+{
+  "format": "budget-manager-export",
+  "version": 1,
+  "description": "FICTIONAL sample data for demos and tests. Real budget data is never committed: put it in database/seed.private.json (git-ignored) or load it with Settings > Import Data.",
+  "months": ["2026-10"],
+  "income": [
+    {
+      "date": "2026-10-01",
+      "source": "Salary",
+      "amount": 80000,
+      "purpose": "Monthly salary",
+      "status": "Received",
+      "paymentMethod": "Bank Transfer",
+      "reference": null,
+      "notes": null
+    },
+    {
+      "date": "2026-10-03",
+      "source": "House Rent",
+      "amount": 5000,
+      "purpose": "First floor",
+      "status": "Received",
+      "paymentMethod": "UPI",
+      "reference": null,
+      "notes": null
+    },
+    {
+      "date": "2026-10-25",
+      "source": "House Rent",
+      "amount": 6000,
+      "purpose": "Ground floor",
+      "status": "Pending",
+      "paymentMethod": null,
+      "reference": null,
+      "notes": null
+    }
+  ],
+  "upcomingIncome": [
+    {
+      "month": "2026-10",
+      "expectedDate": null,
+      "source": "Freelance Project",
+      "amount": 9000,
+      "purpose": "Website redesign",
+      "status": "Pending",
+      "notes": null
+    },
+    {
+      "month": "2026-10",
+      "expectedDate": "2026-10-28",
+      "source": "Loan Interest",
+      "amount": 3000,
+      "purpose": "Interest on money lent",
+      "status": "Expected",
+      "notes": null
+    }
+  ],
+  "expenses": [
+    {
+      "date": "2026-10-05",
+      "category": "Property & Savings",
+      "payee": "Home Loan EMI",
+      "amount": 30000,
+      "purpose": "Home loan",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": "Loan Account",
+      "endPeriod": "2040",
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-05",
+      "category": "Property & Savings",
+      "payee": "Chit Fund",
+      "amount": 5000,
+      "purpose": "1 lakh chit",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": "Chit Account",
+      "endPeriod": "Dec-2027",
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-06",
+      "category": "Property & Savings",
+      "payee": "Recurring Deposit",
+      "amount": 3000,
+      "purpose": "Monthly RD",
+      "expenseType": "Regular",
+      "paymentMethod": "UPI",
+      "reference": "Bank RD",
+      "endPeriod": "Mar-2028",
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-05",
+      "category": "Interest & Finance",
+      "payee": "Gold Loan",
+      "amount": 4000,
+      "purpose": "Gold loan interest",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": "Lender App",
+      "endPeriod": null,
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-05",
+      "category": "Interest & Finance",
+      "payee": "Personal Loan",
+      "amount": 2500,
+      "purpose": "Personal loan interest",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": null,
+      "endPeriod": null,
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-05",
+      "category": "Household & Personal",
+      "payee": "Electricity Bill",
+      "amount": 1200,
+      "purpose": "Electricity",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": "Bill Number",
+      "endPeriod": null,
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-05",
+      "category": "Household & Personal",
+      "payee": "Internet",
+      "amount": 800,
+      "purpose": "Broadband",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": null,
+      "endPeriod": null,
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-07",
+      "category": "Household & Personal",
+      "payee": "Fuel",
+      "amount": 700,
+      "purpose": "Bike fuel",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": "Petrol pump",
+      "endPeriod": null,
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-08",
+      "category": "Household & Personal",
+      "payee": "Groceries",
+      "amount": 3500,
+      "purpose": "Monthly groceries",
+      "expenseType": "Regular",
+      "paymentMethod": "Phone Pay",
+      "reference": null,
+      "endPeriod": null,
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-12",
+      "category": "Additional / One-Time",
+      "payee": "Travel",
+      "amount": 2000,
+      "purpose": "Weekend trip",
+      "expenseType": "Additional",
+      "paymentMethod": "Phone Pay",
+      "reference": null,
+      "endPeriod": "Closed",
+      "status": "Paid",
+      "notes": null
+    },
+    {
+      "date": "2026-10-15",
+      "category": "Additional / One-Time",
+      "payee": "Course Fee",
+      "amount": 1500,
+      "purpose": "Online course",
+      "expenseType": "Additional",
+      "paymentMethod": "Phone Pay",
+      "reference": null,
+      "endPeriod": "Closed",
+      "status": "Paid",
+      "notes": null
+    }
+  ]
+}

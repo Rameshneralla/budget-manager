@@ -1,0 +1,48 @@
+// =============================================================================
+// Emits the theme maps as CSS custom properties (--app-*) and aligns
+// Bootstrap's own variables with them. Dark mode is toggled by setting
+// data-bs-theme="dark" on <html> (see context/ThemeContext.jsx).
+// =============================================================================
+@use 'variables' as *;
+
+@mixin emit-theme($theme) {
+  @each $name, $value in $theme {
+    @if $name == 'shadow-color' {
+      --app-shadow-rgb: #{$value};
+    } @else {
+      --app-#{$name}: #{$value};
+    }
+  }
+}
+
+:root,
+[data-bs-theme='light'] {
+  @include emit-theme($theme-light);
+  color-scheme: light;
+}
+
+[data-bs-theme='dark'] {
+  @include emit-theme($theme-dark);
+  color-scheme: dark;
+}
+
+:root,
+[data-bs-theme='light'],
+[data-bs-theme='dark'] {
+  --app-shadow-sm:
+    0 1px 2px rgba(var(--app-shadow-rgb), 0.06), 0 1px 3px rgba(var(--app-shadow-rgb), 0.04);
+  --app-shadow-md: 0 4px 12px rgba(var(--app-shadow-rgb), 0.08);
+  --app-shadow-lg: 0 12px 32px rgba(var(--app-shadow-rgb), 0.16);
+
+  // Bootstrap integration
+  --bs-body-font-family: #{$font-family-base};
+  --bs-body-font-size: #{$font-size-base};
+  --bs-body-bg: var(--app-app-bg);
+  --bs-body-color: var(--app-text);
+  --bs-secondary-color: var(--app-text-muted);
+  --bs-border-color: var(--app-border);
+  --bs-primary: var(--app-primary);
+  --bs-border-radius: #{$radius-sm};
+  --bs-border-radius-lg: #{$radius-md};
+  --bs-focus-ring-color: color-mix(in srgb, var(--app-primary) 30%, transparent);
+}

@@ -1,0 +1,152 @@
+// Dashboard stat cards and generic content panels.
+@use 'variables' as *;
+@use 'mixins' as *;
+
+.stat-card {
+  @include surface-card;
+  display: flex;
+  gap: $space-3;
+  align-items: flex-start;
+  height: 100%;
+  padding: $space-4;
+
+  &__icon {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: $radius-md;
+    font-size: 1.2rem;
+  }
+
+  &__body {
+    min-width: 0;
+  }
+
+  &__label {
+    margin: 0;
+    color: var(--app-text-muted);
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
+
+  &__value {
+    margin: $space-1 0 0;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    line-height: $line-height-tight;
+    word-break: break-word;
+  }
+
+  &__hint {
+    margin: $space-1 0 0;
+    color: var(--app-text-muted);
+    font-size: $font-size-xs;
+  }
+
+  // Larger card for the three headline numbers.
+  &--hero {
+    padding: $space-5;
+
+    .stat-card__icon {
+      width: 3rem;
+      height: 3rem;
+      font-size: 1.4rem;
+    }
+
+    .stat-card__value {
+      font-size: $font-size-hero;
+      letter-spacing: -0.02em;
+    }
+  }
+
+  &--accent {
+    border-color: color-mix(in srgb, var(--app-primary) 35%, var(--app-border));
+    background: linear-gradient(135deg, var(--app-primary-soft), var(--app-surface) 70%);
+  }
+}
+
+.tone-primary {
+  @include tone(primary);
+}
+.tone-positive {
+  @include tone(positive);
+}
+.tone-negative {
+  @include tone(negative);
+}
+.tone-warning {
+  @include tone(warning);
+}
+.tone-info {
+  @include tone(info);
+}
+.tone-neutral {
+  @include tone(neutral);
+}
+
+.panel {
+  @include surface-card;
+  height: 100%;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: $space-2;
+    padding: $space-4 $space-4 0;
+
+    @include media-up(md) {
+      padding: $space-4 $space-5 0;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+  }
+
+  &__subtitle {
+    margin: $space-1 0 0;
+    color: var(--app-text-muted);
+    font-size: $font-size-sm;
+  }
+
+  &__body {
+    padding: $space-4;
+
+    @include media-up(md) {
+      padding: $space-4 $space-5 $space-5;
+    }
+  }
+}
+
+// Compact totals shown above the income / expense / upcoming tables.
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: $space-3;
+  margin-bottom: $space-4;
+
+  &__item {
+    @include surface-card;
+    padding: $space-3 $space-4;
+  }
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: $space-2;
+    color: var(--app-text-muted);
+    font-size: $font-size-sm;
+  }
+
+  &__value {
+    margin-top: $space-1;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+  }
+}
