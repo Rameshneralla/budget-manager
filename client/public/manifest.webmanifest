@@ -2,7 +2,7 @@
   "id": "./",
   "name": "RBM · Ramesh Budget Manager",
   "short_name": "RBM",
-  "description": "Personal budget manager for Ramesh Nerella: income, expenses and upcoming income.",
+  "description": "Personal budget manager for Ramesh Nerella: income (received and expected) and expenses.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

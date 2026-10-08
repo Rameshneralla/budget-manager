@@ -1,6 +1,5 @@
 /**
- * Queries that are identical for every record table (income, expenses,
- * upcoming_income): deletes, bulk deletes and counts. Status changes go through
+ * Queries that are identical for every record table (income, expenses): deletes, bulk deletes and counts. Status changes go through
  * each repository's update(), so services can adjust related fields at the same time.
  *
  * `tableName` always comes from code (see the repositories), never from user

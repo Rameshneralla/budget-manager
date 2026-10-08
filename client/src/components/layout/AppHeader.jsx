@@ -28,7 +28,6 @@ const NAV_ITEMS = [
   { to: ROUTES.DASHBOARD, label: 'Dashboard', icon: FiGrid, end: true },
   { to: ROUTES.INCOME, label: 'Income', icon: FiTrendingUp },
   { to: ROUTES.EXPENSES, label: 'Expenses', icon: FiTrendingDown },
-  { to: ROUTES.UPCOMING_INCOME, label: 'Upcoming', icon: FiCalendar },
   { to: ROUTES.SETTINGS, label: 'Settings', icon: FiSettings },
 ];
 

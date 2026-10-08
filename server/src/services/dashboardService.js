@@ -21,11 +21,11 @@ function percentageOf(partPaise, totalPaise) {
   return Math.round((partPaise / totalPaise) * 100 * factor) / factor;
 }
 
-function buildSummary(incomeTotals, expenseTotals, upcomingTotals) {
+function buildSummary(incomeTotals, expenseTotals) {
   return {
     totalIncome: paiseToRupees(incomeTotals.total_paise),
     receivedIncome: paiseToRupees(incomeTotals.received_paise),
-    pendingIncome: paiseToRupees(incomeTotals.pending_paise),
+    expectedIncome: paiseToRupees(incomeTotals.expected_paise),
 
     totalExpenses: paiseToRupees(expenseTotals.total_paise),
     paidExpenses: paiseToRupees(expenseTotals.paid_paise),
@@ -33,9 +33,6 @@ function buildSummary(incomeTotals, expenseTotals, upcomingTotals) {
     closedExpenses: paiseToRupees(expenseTotals.closed_paise),
     regularCommitments: paiseToRupees(expenseTotals.regular_paise),
     oneTimeExpenses: paiseToRupees(expenseTotals.additional_paise),
-
-    upcomingIncome: paiseToRupees(upcomingTotals.total_paise),
-    upcomingIncomeOutstanding: paiseToRupees(upcomingTotals.outstanding_paise),
 
     availableBalance: paiseToRupees(incomeTotals.received_paise - expenseTotals.paid_paise),
     potentialBalance: paiseToRupees(incomeTotals.total_paise - expenseTotals.total_paise),
@@ -67,17 +64,15 @@ function getDashboard(rawMonth) {
 
   const incomeTotals = dashboardRepository.getIncomeTotals(monthKey);
   const expenseTotals = dashboardRepository.getExpenseTotals(monthKey);
-  const upcomingTotals = dashboardRepository.getUpcomingIncomeTotals(monthKey);
   const categoryRows = dashboardRepository.getExpenseCategoryBreakdown(monthKey);
   const paymentRows = dashboardRepository.getExpensePaymentMethodSummary(monthKey);
 
   return {
     month: monthKey,
-    summary: buildSummary(incomeTotals, expenseTotals, upcomingTotals),
+    summary: buildSummary(incomeTotals, expenseTotals),
     counts: {
       income: incomeTotals.record_count,
       expenses: expenseTotals.record_count,
-      upcomingIncome: upcomingTotals.record_count,
     },
     categoryBreakdown: buildCategoryBreakdown(categoryRows, expenseTotals.total_paise),
     paymentMethodSummary: buildPaymentMethodSummary(paymentRows, expenseTotals.total_paise),

@@ -1,6 +1,6 @@
 {
   "format": "budget-manager-export",
-  "version": 2,
+  "version": 3,
   "description": "FICTIONAL sample data for demos and tests. Real budget data is never committed: put it in database/seed.private.json (git-ignored) or load it with Settings > Import Data.",
   "months": [
     "2026-10"
@@ -34,32 +34,32 @@
       "source": "House Rent",
       "amount": 6000,
       "purpose": "Ground floor",
-      "status": "Pending",
+      "status": "Expected",
       "paymentMethod": null,
       "reference": null,
       "notes": null
-    }
-  ],
-  "upcomingIncome": [
+    },
     {
-      "month": "2026-10",
-      "expectedDate": null,
+      "dueDate": "2026-10-20",
+      "receivedDate": null,
       "source": "Freelance Project",
       "amount": 9000,
       "purpose": "Website redesign",
-      "status": "Pending",
-      "notes": null,
-      "incomeIndex": null
+      "status": "Expected",
+      "paymentMethod": null,
+      "reference": null,
+      "notes": null
     },
     {
-      "month": "2026-10",
-      "expectedDate": "2026-10-28",
+      "dueDate": "2026-10-28",
+      "receivedDate": null,
       "source": "Loan Interest",
       "amount": 3000,
       "purpose": "Interest on money lent",
       "status": "Expected",
-      "notes": null,
-      "incomeIndex": null
+      "paymentMethod": null,
+      "reference": null,
+      "notes": null
     }
   ],
   "expenses": [

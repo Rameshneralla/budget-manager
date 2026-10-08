@@ -40,10 +40,7 @@ export default function ImportDataCard() {
     try {
       const counts = await dataService.importData(pendingImport.payload);
       toast.success(
-        `Imported ${pluralize(counts.income, 'income record')}, ${pluralize(counts.expenses, 'expense')} and ${pluralize(
-          counts.upcomingIncome,
-          'upcoming income record'
-        )}`
+        `Imported ${pluralize(counts.income, 'income record')} and ${pluralize(counts.expenses, 'expense')}`
       );
       setPendingImport(null);
       notifyDataChanged();
@@ -60,7 +57,7 @@ export default function ImportDataCard() {
       icon={FiUpload}
       tone="warning"
       title="Import Data"
-      description="Restore from a JSON file created with Export Data. This replaces all current income, expenses and upcoming income."
+      description="Restore from a JSON file created with Export Data. This replaces all current income and expenses."
     >
       <input
         ref={fileInputRef}

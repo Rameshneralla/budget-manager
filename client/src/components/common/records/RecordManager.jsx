@@ -3,7 +3,7 @@
  * and Add button, summary totals, search/filters, bulk actions, table (or
  * mobile cards), pagination, add/edit modal and delete confirmations.
  *
- * Income, Expenses and Upcoming Income pages only pass a `config` object that
+ * Income and Expenses pages only pass a `config` object that
  * describes their columns, filters, form fields and labels - see e.g.
  * components/income/useIncomeConfig.js. Shared behaviour lives here once.
  */

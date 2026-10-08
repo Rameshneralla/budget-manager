@@ -2,7 +2,7 @@
  * Data management: JSON export, JSON import (full replace) and SQLite backups.
  *
  * The export file format is also used by the seed data
- * (database/seed-data/october-2026.json), so seeding and importing share one path.
+ * (database/seed-data/sample-data.json), so seeding and importing share one path.
  * Categories and payment methods are referenced by NAME in the file, never by id.
  */
 const fs = require('fs');
@@ -11,17 +11,16 @@ const env = require('../config/env');
 const { getDb, runInTransaction } = require('../database/connection');
 const incomeRepository = require('../repositories/incomeRepository');
 const expenseRepository = require('../repositories/expenseRepository');
-const upcomingIncomeRepository = require('../repositories/upcomingIncomeRepository');
 const monthRepository = require('../repositories/monthRepository');
 const lookupRepository = require('../repositories/lookupRepository');
 const userRepository = require('../repositories/userRepository');
 const auditService = require('./auditService');
 const { validateIncomeInput } = require('../validators/incomeValidator');
 const { validateExpenseInput } = require('../validators/expenseValidator');
-const { validateUpcomingIncomeInput } = require('../validators/upcomingIncomeValidator');
 const { ValidationError } = require('../utils/errors');
 const { isValidMonthKey, monthKeyFromDate } = require('../utils/dates');
-const { EXPORT_FORMAT, AUDIT_ACTIONS } = require('../constants');
+const { rupeesToPaise } = require('../utils/money');
+const { EXPORT_FORMAT, AUDIT_ACTIONS, INCOME_RECEIVED_STATUS } = require('../constants');
 
 const MAX_REPORTED_IMPORT_ERRORS = 20;
 
@@ -29,10 +28,6 @@ const MAX_REPORTED_IMPORT_ERRORS = 20;
 
 function exportData() {
   const owner = userRepository.findOwner();
-  const allIncome = incomeRepository.findAll();
-  // Upcoming income -> income links are written as positions in the income list,
-  // because database ids are not kept when a file is imported.
-  const incomePositionById = new Map(allIncome.map((income, index) => [income.id, index]));
 
   return {
     format: EXPORT_FORMAT.NAME,
@@ -40,7 +35,7 @@ function exportData() {
     exportedAt: new Date().toISOString(),
     owner: owner ? owner.fullName : null,
     months: monthRepository.findAllKeys(),
-    income: allIncome.map((income) => ({
+    income: incomeRepository.findAll().map((income) => ({
       dueDate: income.dueDate,
       receivedDate: income.receivedDate,
       source: income.source,
@@ -64,16 +59,6 @@ function exportData() {
       endPeriod: expense.endPeriod,
       status: expense.status,
       notes: expense.notes,
-    })),
-    upcomingIncome: upcomingIncomeRepository.findAll().map((upcoming) => ({
-      month: upcoming.month,
-      expectedDate: upcoming.expectedDate,
-      source: upcoming.source,
-      amount: upcoming.amount,
-      purpose: upcoming.purpose,
-      status: upcoming.status,
-      notes: upcoming.notes,
-      incomeIndex: incomePositionById.get(upcoming.incomeId) ?? null,
     })),
   };
 }
@@ -147,15 +132,64 @@ function upgradeDatedItems(items, version) {
   );
 }
 
-function validateIncomeIndex(collector, key, incomeIndex, incomeCount) {
-  if (incomeIndex === undefined || incomeIndex === null) {
-    return null;
+/** Income status "Pending" (versions 1-2) is now "Expected". */
+function upgradeIncomeStatus(items, version) {
+  if (version >= 3) {
+    return items;
   }
-  if (!Number.isInteger(incomeIndex) || incomeIndex < 0 || incomeIndex >= incomeCount) {
-    collector.add(key, 'Linked income does not exist in this file.');
-    return null;
-  }
-  return incomeIndex;
+  return items.map((item) =>
+    item && typeof item === 'object' && item.status === 'Pending'
+      ? { ...item, status: 'Expected' }
+      : item
+  );
+}
+
+function isSameMonthAndSource(income, upcoming) {
+  return (
+    typeof income?.dueDate === 'string' &&
+    income.dueDate.slice(0, 7) === upcoming.month &&
+    String(income.source ?? '')
+      .trim()
+      .toLowerCase() ===
+      String(upcoming.source ?? '')
+        .trim()
+        .toLowerCase()
+  );
+}
+
+/** Same amount as one matching income record, or as all of them together (e.g. two rents). */
+function isAlreadyInIncome(income, upcoming) {
+  const matches = income.filter((item) => isSameMonthAndSource(item, upcoming));
+  const amount = rupeesToPaise(Number(upcoming.amount));
+  const amounts = matches.map((item) => rupeesToPaise(Number(item.amount)));
+  const total = amounts.reduce((sum, value) => sum + value, 0);
+  return matches.length > 0 && (amounts.includes(amount) || total === amount);
+}
+
+/**
+ * Versions 1-2 had a separate "upcomingIncome" list. Each entry becomes an
+ * income record (Received stays Received, anything else is Expected) unless it
+ * is already in the income list: linked to it (incomeIndex), or the same month
+ * and source with the same amount (see isAlreadyInIncome).
+ */
+function upcomingToIncome(upcomingItems, income) {
+  return upcomingItems
+    .filter((item) => item && typeof item === 'object')
+    .filter((item) => item.incomeIndex === undefined || item.incomeIndex === null)
+    .filter((item) => !isAlreadyInIncome(income, item))
+    .map((item) => {
+      const isReceived = item.status === INCOME_RECEIVED_STATUS;
+      return {
+        dueDate: item.expectedDate || `${item.month}-01`,
+        receivedDate: isReceived ? (item.expectedDate ?? null) : null,
+        source: item.source,
+        amount: item.amount,
+        purpose: item.purpose ?? null,
+        status: isReceived ? INCOME_RECEIVED_STATUS : 'Expected',
+        reference: 'Moved from Upcoming Income',
+        notes: item.notes ?? null,
+      };
+    });
 }
 
 function validateImportFile(payload) {
@@ -182,7 +216,14 @@ function validateImportFile(payload) {
     }
   });
 
-  const rawIncome = upgradeDatedItems(asArray(payload.income), payload.version);
+  const fileIncome = upgradeIncomeStatus(
+    upgradeDatedItems(asArray(payload.income), payload.version),
+    payload.version
+  );
+  const rawIncome = [
+    ...fileIncome,
+    ...upcomingToIncome(asArray(payload.upcomingIncome), fileIncome),
+  ];
   const income = rawIncome.map((item, index) => {
     const prefix = `income[${index}]`;
     const paymentMethodId = resolveName(
@@ -224,27 +265,14 @@ function validateImportFile(payload) {
     });
   });
 
-  const upcomingIncome = asArray(payload.upcomingIncome).map((item, index) => {
-    const prefix = `upcomingIncome[${index}]`;
-    const validated = collector.validate(prefix, validateUpcomingIncomeInput, item);
-    const incomeIndex = validateIncomeIndex(
-      collector,
-      `${prefix}.incomeIndex`,
-      item?.incomeIndex,
-      rawIncome.length
-    );
-    return validated && { ...validated, incomeIndex };
-  });
-
   collector.throwIfAny();
-  return { months, income, expenses, upcomingIncome };
+  return { months, income, expenses };
 }
 
-function collectMonthKeys({ months, income, expenses, upcomingIncome }) {
+function collectMonthKeys({ months, income, expenses }) {
   const monthKeys = new Set(months);
   income.forEach((item) => monthKeys.add(monthKeyFromDate(item.dueDate)));
   expenses.forEach((item) => monthKeys.add(monthKeyFromDate(item.dueDate)));
-  upcomingIncome.forEach((item) => monthKeys.add(item.month));
   return [...monthKeys].sort();
 }
 
@@ -257,36 +285,28 @@ function importData(payload, { source = 'import file' } = {}) {
   const monthKeys = collectMonthKeys(data);
 
   return runInTransaction(() => {
-    upcomingIncomeRepository.deleteAll();
     incomeRepository.deleteAll();
     expenseRepository.deleteAll();
     monthRepository.deleteAll();
 
     monthKeys.forEach((monthKey) => monthRepository.ensureExists(monthKey));
-    const createdIncomeIds = data.income.map(
-      (item) => incomeRepository.create({ ...item, month: monthKeyFromDate(item.dueDate) }).id
+    data.income.forEach((item) =>
+      incomeRepository.create({ ...item, month: monthKeyFromDate(item.dueDate) })
     );
     data.expenses.forEach((item) =>
       expenseRepository.create({ ...item, month: monthKeyFromDate(item.dueDate) })
     );
-    data.upcomingIncome.forEach(({ incomeIndex, ...item }) => {
-      const created = upcomingIncomeRepository.create(item);
-      if (incomeIndex !== null) {
-        upcomingIncomeRepository.setIncomeId(created.id, createdIncomeIds[incomeIndex]);
-      }
-    });
 
     const counts = {
       months: monthKeys.length,
       income: data.income.length,
       expenses: data.expenses.length,
-      upcomingIncome: data.upcomingIncome.length,
     };
 
     auditService.log({
       entityType: 'data',
       action: AUDIT_ACTIONS.IMPORTED,
-      summary: `Data imported from ${source}: ${counts.income} income, ${counts.expenses} expenses, ${counts.upcomingIncome} upcoming income`,
+      summary: `Data imported from ${source}: ${counts.income} income, ${counts.expenses} expenses`,
       details: counts,
     });
 
@@ -298,8 +318,7 @@ function isDatabaseEmpty() {
   return (
     monthRepository.findAllKeys().length === 0 &&
     incomeRepository.countAll() === 0 &&
-    expenseRepository.countAll() === 0 &&
-    upcomingIncomeRepository.countAll() === 0
+    expenseRepository.countAll() === 0
   );
 }
 

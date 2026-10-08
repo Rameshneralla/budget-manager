@@ -17,7 +17,8 @@ import {
 } from 'react-icons/fi';
 import { MdOutlineAccountBalanceWallet } from 'react-icons/md';
 import StatCard from '../common/StatCard';
-import { formatCurrency } from '../../utils/formatters';
+
+const STATUS_CARD_COUNT = 4;
 
 export default function SummaryCards({ summary, counts }) {
   const heroCards = [
@@ -52,16 +53,15 @@ export default function SummaryCards({ summary, counts }) {
       icon: FiCheckCircle,
       tone: 'positive',
     },
-    { label: 'Pending Income', amount: summary.pendingIncome, icon: FiClock, tone: 'warning' },
-    { label: 'Paid Expenses', amount: summary.paidExpenses, icon: FiCreditCard, tone: 'neutral' },
-    { label: 'Pending Expenses', amount: summary.pendingExpenses, icon: FiClock, tone: 'warning' },
     {
-      label: 'Upcoming Income',
-      amount: summary.upcomingIncome,
+      label: 'Expected Income',
+      amount: summary.expectedIncome,
       icon: FiCalendar,
       tone: 'info',
-      hint: `${formatCurrency(summary.upcomingIncomeOutstanding)} not yet received`,
+      hint: 'Not received yet',
     },
+    { label: 'Paid Expenses', amount: summary.paidExpenses, icon: FiCreditCard, tone: 'neutral' },
+    { label: 'Pending Expenses', amount: summary.pendingExpenses, icon: FiClock, tone: 'warning' },
     {
       label: 'Regular Commitments',
       amount: summary.regularCommitments,
@@ -96,8 +96,9 @@ export default function SummaryCards({ summary, counts }) {
         ))}
       </Row>
       <Row className="g-3">
-        {detailCards.map((card) => (
-          <Col key={card.label} xs={12} sm={6} xl={3}>
+        {/* Income & expense status cards: 4 per row; commitments & balance: 3 per row (xl). */}
+        {detailCards.map((card, index) => (
+          <Col key={card.label} xs={12} sm={6} xl={index < STATUS_CARD_COUNT ? 3 : 4}>
             <StatCard {...card} />
           </Col>
         ))}

@@ -27,7 +27,6 @@ const monthRepository = {
          WHERE month_key NOT IN (
            SELECT month_key FROM income
            UNION SELECT month_key FROM expenses
-           UNION SELECT month_key FROM upcoming_income
          )`
       )
       .run().changes;

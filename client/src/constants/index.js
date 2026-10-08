@@ -12,7 +12,6 @@ export const ROUTES = Object.freeze({
   DASHBOARD: '/',
   INCOME: '/income',
   EXPENSES: '/expenses',
-  UPCOMING_INCOME: '/upcoming-income',
   SETTINGS: '/settings',
 });
 
@@ -43,9 +42,6 @@ export const SORT_DIRECTIONS = Object.freeze({ ASC: 'asc', DESC: 'desc' });
 
 /** Below this width tables turn into stacked record cards (matches Bootstrap "md"). */
 export const MOBILE_MEDIA_QUERY = '(max-width: 767.98px)';
-
-/** Number of future months offered in the "Month" picker of the upcoming-income form. */
-export const FUTURE_MONTHS_IN_PICKER = 12;
 
 export const RECENT_ACTIVITY_LIMIT = 8;
 

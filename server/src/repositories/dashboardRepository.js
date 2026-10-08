@@ -13,7 +13,7 @@ const dashboardRepository = {
            COUNT(*)                                                         AS record_count,
            COALESCE(SUM(amount_paise), 0)                                   AS total_paise,
            COALESCE(SUM(CASE WHEN status = 'Received' THEN amount_paise END), 0) AS received_paise,
-           COALESCE(SUM(CASE WHEN status = 'Pending'  THEN amount_paise END), 0) AS pending_paise
+           COALESCE(SUM(CASE WHEN status = 'Expected' THEN amount_paise END), 0) AS expected_paise
          FROM income
          WHERE month_key = ?`
       )
@@ -32,19 +32,6 @@ const dashboardRepository = {
            COALESCE(SUM(CASE WHEN expense_type = 'Regular'    THEN amount_paise END), 0) AS regular_paise,
            COALESCE(SUM(CASE WHEN expense_type = 'Additional' THEN amount_paise END), 0) AS additional_paise
          FROM expenses
-         WHERE month_key = ?`
-      )
-      .get(monthKey);
-  },
-
-  getUpcomingIncomeTotals(monthKey) {
-    return getDb()
-      .prepare(
-        `SELECT
-           COUNT(*)                                                                AS record_count,
-           COALESCE(SUM(amount_paise), 0)                                          AS total_paise,
-           COALESCE(SUM(CASE WHEN status <> 'Received' THEN amount_paise END), 0)  AS outstanding_paise
-         FROM upcoming_income
          WHERE month_key = ?`
       )
       .get(monthKey);

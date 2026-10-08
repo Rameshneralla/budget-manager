@@ -30,7 +30,7 @@ export default function ExportDataCard() {
       icon={FiDownload}
       tone="primary"
       title="Export Data"
-      description="Download all income, expenses and upcoming income as a JSON file. Keep it as a backup or to move your data to another computer."
+      description="Download all income and expenses as a JSON file. Keep it as a backup or to move your data to another computer."
     >
       <Button variant="primary" onClick={handleExport} disabled={isExporting}>
         {isExporting ? (

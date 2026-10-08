@@ -1,6 +1,6 @@
 /**
- * Builds the API client for a record type. Income, expenses and upcoming
- * income all expose the same REST endpoints (see server createRecordRouter.js).
+ * Builds the API client for a record type. Income and expenses
+ * both expose the same REST endpoints (see server createRecordRouter.js).
  */
 import { api } from './api';
 

@@ -6,7 +6,7 @@
  * a column and/or form field here.
  */
 import { useMemo } from 'react';
-import { FiCheckCircle, FiClock, FiTrendingUp } from 'react-icons/fi';
+import { FiCalendar, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
 import { incomeService } from '../../services/incomeService';
 import { useBudget } from '../../context/BudgetContext';
 import { VALIDATION_LIMITS } from '../../constants/validation';
@@ -28,6 +28,7 @@ import {
 } from '../common/records/recordConfigHelpers';
 
 const RECEIVED_STATUS = 'Received';
+const EXPECTED_STATUS = 'Expected';
 const DEFAULT_INCOME_STATUS = RECEIVED_STATUS;
 
 function toFormValues(income, monthKey) {
@@ -81,7 +82,7 @@ export function useIncomeConfig() {
 
     return {
       title: 'Income',
-      subtitle: 'Salary, rent and other money received',
+      subtitle: 'Salary, rent and other income - received or still expected',
       singular: 'Income',
       pluralLabel: 'income records',
       addLabel: 'Add Income',
@@ -124,7 +125,14 @@ export function useIncomeConfig() {
           placeholder: 'e.g. Salary, House Rent',
         },
         { name: 'amount', label: 'Amount', type: 'amount', required: true },
-        { name: 'status', label: 'Status', type: 'select', required: true, options: statusOptions },
+        {
+          name: 'status',
+          label: 'Status',
+          type: 'select',
+          required: true,
+          options: statusOptions,
+          helpText: 'Expected = not received yet. Change it to Received when the money arrives.',
+        },
         {
           name: 'receivedDate',
           label: 'Actual Received Date',
@@ -152,8 +160,16 @@ export function useIncomeConfig() {
 
       buildSummary: (records) => [
         { label: 'Total Income', amount: sumAmounts(records), icon: FiTrendingUp },
-        { label: 'Received', amount: sumAmountsByStatus(records, 'Received'), icon: FiCheckCircle },
-        { label: 'Pending', amount: sumAmountsByStatus(records, 'Pending'), icon: FiClock },
+        {
+          label: 'Received',
+          amount: sumAmountsByStatus(records, RECEIVED_STATUS),
+          icon: FiCheckCircle,
+        },
+        {
+          label: 'Expected',
+          amount: sumAmountsByStatus(records, EXPECTED_STATUS),
+          icon: FiCalendar,
+        },
       ],
     };
   }, [meta]);

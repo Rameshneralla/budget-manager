@@ -1,6 +1,6 @@
 /**
  * Income vs Expenses: one stacked bar each, split into settled (received/paid),
- * pending and closed. Legend and values are shown in HTML beside the chart.
+ * still to come (expected income / pending expenses) and closed. Legend and values are shown in HTML beside the chart.
  */
 import { Bar } from 'react-chartjs-2';
 import ChartLegend from './ChartLegend';
@@ -19,8 +19,8 @@ function buildSegments(summary, colors) {
       color: colors.series[0],
     },
     {
-      label: 'Pending',
-      values: [summary.pendingIncome, summary.pendingExpenses],
+      label: 'Expected / Pending',
+      values: [summary.expectedIncome, summary.pendingExpenses],
       color: colors.series[1],
     },
     { label: 'Closed', values: [0, summary.closedExpenses], color: colors.series[2] },
@@ -96,7 +96,7 @@ export default function IncomeVsExpensesChart({ summary }) {
           role="img"
           aria-label={`Income ${formatCurrency(summary.totalIncome)} (received ${formatCurrency(
             summary.receivedIncome
-          )}, pending ${formatCurrency(summary.pendingIncome)}). Expenses ${formatCurrency(
+          )}, expected ${formatCurrency(summary.expectedIncome)}). Expenses ${formatCurrency(
             summary.totalExpenses
           )} (paid ${formatCurrency(summary.paidExpenses)}, pending ${formatCurrency(summary.pendingExpenses)}).`}
         >

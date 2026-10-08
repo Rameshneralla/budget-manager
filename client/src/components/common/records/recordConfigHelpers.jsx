@@ -1,5 +1,5 @@
 /**
- * Building blocks for the record configs (income, expenses, upcoming income).
+ * Building blocks for the record configs (income, expenses).
  * Each helper returns a plain column / filter / option definition consumed by
  * RecordManager, DataTable, RecordCardList, FilterBar and useTableState.
  */

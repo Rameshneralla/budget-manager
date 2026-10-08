@@ -10,7 +10,6 @@
  */
 import incomeService from '../../../server/src/services/incomeService';
 import expenseService from '../../../server/src/services/expenseService';
-import upcomingIncomeService from '../../../server/src/services/upcomingIncomeService';
 import dashboardService from '../../../server/src/services/dashboardService';
 import monthService from '../../../server/src/services/monthService';
 import metaService from '../../../server/src/services/metaService';
@@ -35,7 +34,6 @@ const { AppError, NotFoundError } = errors;
 const RECORD_SERVICES = {
   income: incomeService,
   expenses: expenseService,
-  'upcoming-income': upcomingIncomeService,
 };
 
 // POST requests that do not change budget data (so they are not synced).

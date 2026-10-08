@@ -13,13 +13,6 @@ export function getCurrentMonthKey() {
   return toIsoDate(new Date()).slice(0, 7);
 }
 
-/** '2026-12' + 1 -> '2027-01' */
-export function addMonths(monthKey, count) {
-  const [year, month] = monthKey.split('-').map(Number);
-  const date = new Date(year, month - 1 + count, 1);
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}`;
-}
-
 /**
  * A sensible default date for a new record in `monthKey`:
  * today if today is in that month, otherwise the first day of the month.
@@ -39,17 +32,4 @@ export function pickInitialMonth(availableMonths, preferredMonth) {
     return currentMonth;
   }
   return availableMonths[availableMonths.length - 1] || currentMonth;
-}
-
-/**
- * Options for a month picker: every month that has data plus the next
- * `futureCount` months after the selected one, sorted and de-duplicated.
- */
-export function buildMonthOptions(availableMonths, selectedMonth, futureCount) {
-  const months = new Set(availableMonths);
-  months.add(selectedMonth);
-  for (let offset = 1; offset <= futureCount; offset += 1) {
-    months.add(addMonths(selectedMonth, offset));
-  }
-  return [...months].sort();
 }

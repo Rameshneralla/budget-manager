@@ -4,21 +4,19 @@
  * If you add a status here, also add it to the CHECK constraint in a new migration.
  */
 
-const INCOME_STATUSES = Object.freeze(['Received', 'Pending']);
+// Expected = not received yet (planned / upcoming income).
+const INCOME_STATUSES = Object.freeze(['Expected', 'Received']);
 const EXPENSE_STATUSES = Object.freeze(['Paid', 'Pending', 'Closed']);
-const UPCOMING_INCOME_STATUSES = Object.freeze(['Expected', 'Pending', 'Received']);
 const EXPENSE_TYPES = Object.freeze(['Regular', 'Additional']);
 
 // Statuses that mean the money actually moved, so an actual date may be recorded.
 const INCOME_RECEIVED_STATUS = 'Received';
 const EXPENSE_PAID_STATUS = 'Paid';
 const EXPENSE_SETTLED_STATUSES = Object.freeze(['Paid', 'Closed']);
-const UPCOMING_RECEIVED_STATUS = 'Received';
 
 const ENTITY_TYPES = Object.freeze({
   INCOME: 'income',
   EXPENSE: 'expense',
-  UPCOMING_INCOME: 'upcoming_income',
 });
 
 const AUDIT_ACTIONS = Object.freeze({
@@ -40,22 +38,21 @@ const LIMITS = Object.freeze({
 
 const SESSION_COOKIE_NAME = 'budget_session';
 
-// Version 2 added due/actual dates and upcoming -> income links. Version 1 files still import.
+// Version 2 added due/actual dates; version 3 folded upcoming income into income
+// (status Expected). Older files still import and are converted.
 const EXPORT_FORMAT = Object.freeze({
   NAME: 'budget-manager-export',
-  VERSION: 2,
-  SUPPORTED_VERSIONS: Object.freeze([1, 2]),
+  VERSION: 3,
+  SUPPORTED_VERSIONS: Object.freeze([1, 2, 3]),
 });
 
 module.exports = {
   INCOME_STATUSES,
   EXPENSE_STATUSES,
-  UPCOMING_INCOME_STATUSES,
   EXPENSE_TYPES,
   INCOME_RECEIVED_STATUS,
   EXPENSE_PAID_STATUS,
   EXPENSE_SETTLED_STATUSES,
-  UPCOMING_RECEIVED_STATUS,
   ENTITY_TYPES,
   AUDIT_ACTIONS,
   LIMITS,

@@ -1,6 +1,6 @@
 /**
  * Standard REST routes for a record type. Mounted at /api/income,
- * /api/expenses and /api/upcoming-income (see routes/index.js).
+ * /api/expenses (see routes/index.js).
  *
  *   GET    /?month=YYYY-MM   list records for a month
  *   GET    /:id              one record

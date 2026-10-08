@@ -3,7 +3,7 @@
  * To add a page: create it in pages/, add a <Route> here and a link in
  * components/layout/AppHeader.jsx (NAV_ITEMS).
  */
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
@@ -12,7 +12,6 @@ import AppLayout from './components/layout/AppLayout';
 import Dashboard from './pages/Dashboard';
 import Income from './pages/Income';
 import Expenses from './pages/Expenses';
-import UpcomingIncome from './pages/UpcomingIncome';
 import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
 import { ROUTES } from './constants';
@@ -44,7 +43,8 @@ export default function App() {
                 <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
                 <Route path={ROUTES.INCOME} element={<Income />} />
                 <Route path={ROUTES.EXPENSES} element={<Expenses />} />
-                <Route path={ROUTES.UPCOMING_INCOME} element={<UpcomingIncome />} />
+                {/* Upcoming income is now Income with status Expected (old links / bookmarks). */}
+                <Route path="/upcoming-income" element={<Navigate to={ROUTES.INCOME} replace />} />
                 <Route path={ROUTES.SETTINGS} element={<Settings />} />
                 <Route path="*" element={<NotFound />} />
               </Route>

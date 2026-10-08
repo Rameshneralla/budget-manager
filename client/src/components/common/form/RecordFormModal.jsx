@@ -1,5 +1,5 @@
 /**
- * Add / edit modal used by Income, Expenses and Upcoming Income.
+ * Add / edit modal used by Income and Expenses.
  *
  * The form is described by `fields` (see components/<feature>/*FormConfig.js);
  * this component handles state, client validation, server field errors,

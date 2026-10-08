@@ -4,11 +4,7 @@
  */
 const express = require('express');
 const createRecordRouter = require('./createRecordRouter');
-const {
-  incomeController,
-  expenseController,
-  upcomingIncomeController,
-} = require('../controllers/recordControllers');
+const { incomeController, expenseController } = require('../controllers/recordControllers');
 const dashboardController = require('../controllers/dashboardController');
 const referenceController = require('../controllers/referenceController');
 const dataController = require('../controllers/dataController');
@@ -33,7 +29,6 @@ router.get('/dashboard', dashboardController.getDashboard);
 
 router.use('/income', createRecordRouter(incomeController));
 router.use('/expenses', createRecordRouter(expenseController));
-router.use('/upcoming-income', createRecordRouter(upcomingIncomeController));
 
 router.get('/data/export', dataController.exportData);
 router.post('/data/import', dataController.importData);

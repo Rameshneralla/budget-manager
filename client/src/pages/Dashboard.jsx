@@ -1,6 +1,6 @@
 /**
  * Dashboard (landing page): totals, charts and summaries for the selected month.
- * Data: GET /api/dashboard?month=, GET /api/upcoming-income?month=, GET /api/activity.
+ * Data: GET /api/dashboard?month=, GET /api/income?month= (expected list), GET /api/activity.
  * Everything re-loads automatically after any change (dataVersion).
  */
 import Row from 'react-bootstrap/Row';
@@ -12,20 +12,22 @@ import SummaryCards from '../components/dashboard/SummaryCards';
 import IncomeVsExpensesChart from '../components/dashboard/IncomeVsExpensesChart';
 import CategoryBreakdown from '../components/dashboard/CategoryBreakdown';
 import PaymentMethodSummary from '../components/dashboard/PaymentMethodSummary';
-import UpcomingIncomePanel from '../components/dashboard/UpcomingIncomePanel';
+import ExpectedIncomePanel from '../components/dashboard/ExpectedIncomePanel';
 import RecentActivity from '../components/dashboard/RecentActivity';
 import LocalDataNotice from '../components/common/LocalDataNotice';
 import { useBudget } from '../context/BudgetContext';
 import { useApiData } from '../hooks/useApiData';
 import { dashboardService } from '../services/dashboardService';
-import { upcomingIncomeService } from '../services/upcomingIncomeService';
+import { incomeService } from '../services/incomeService';
 import { referenceService } from '../services/referenceService';
 import { RECENT_ACTIVITY_LIMIT } from '../constants';
 import { formatMonthLabel } from '../utils/formatters';
 
-function DashboardContent({ dashboard, upcomingIncome, activityState }) {
+const EXPECTED_STATUS = 'Expected';
+
+function DashboardContent({ dashboard, expectedIncome, activityState }) {
   const { summary, counts } = dashboard;
-  const hasNoRecords = counts.income + counts.expenses + counts.upcomingIncome === 0;
+  const hasNoRecords = counts.income + counts.expenses === 0;
 
   return (
     <>
@@ -37,7 +39,7 @@ function DashboardContent({ dashboard, upcomingIncome, activityState }) {
           <IncomeVsExpensesChart summary={summary} />
         </Col>
         <Col xs={12} lg={5}>
-          <UpcomingIncomePanel upcomingIncome={upcomingIncome} />
+          <ExpectedIncomePanel expectedIncome={expectedIncome} />
         </Col>
       </Row>
 
@@ -71,8 +73,8 @@ export default function Dashboard() {
     () => dashboardService.getDashboard(selectedMonth),
     [selectedMonth, dataVersion]
   );
-  const upcomingState = useApiData(
-    () => upcomingIncomeService.listByMonth(selectedMonth),
+  const incomeState = useApiData(
+    () => incomeService.listByMonth(selectedMonth),
     [selectedMonth, dataVersion]
   );
   const activityState = useApiData(
@@ -80,8 +82,8 @@ export default function Dashboard() {
     [dataVersion]
   );
 
-  const error = dashboardState.error || upcomingState.error;
-  const isFirstLoad = !dashboardState.data || !upcomingState.data;
+  const error = dashboardState.error || incomeState.error;
+  const isFirstLoad = !dashboardState.data || !incomeState.data;
 
   let content;
   if (error) {
@@ -91,7 +93,7 @@ export default function Dashboard() {
         message={error.message}
         onRetry={() => {
           dashboardState.reload();
-          upcomingState.reload();
+          incomeState.reload();
         }}
       />
     );
@@ -101,7 +103,7 @@ export default function Dashboard() {
     content = (
       <DashboardContent
         dashboard={dashboardState.data}
-        upcomingIncome={upcomingState.data}
+        expectedIncome={incomeState.data.filter((income) => income.status === EXPECTED_STATUS)}
         activityState={activityState}
       />
     );

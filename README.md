@@ -1,6 +1,6 @@
 # Personal Budget Manager — Ramesh Nerella
 
-A monthly budget application for tracking income, expenses and upcoming income.
+A monthly budget application for tracking income (received and expected) and expenses.
 Everything is stored in a local SQLite database and managed from a responsive React dashboard.
 
 ```
@@ -14,15 +14,15 @@ The React app never reads seed files or keeps budget data in the browser. Every 
 ## 1. Features
 
 - **Dashboard** for the selected month:
-  - 11 cards: total, received and pending income; total, paid and pending expenses; upcoming income; available balance; potential balance; regular commitments; one-time expenses
+  - 10 cards: total, received and expected income; total, paid and pending expenses; available balance; potential balance; regular commitments; one-time expenses
   - Income vs Expenses chart
   - Expense breakdown by category (donut chart and table)
-  - Payment-method summary, upcoming income and recent activity
-- **Month dropdown built from the database.** Today it shows only *October 2026*. A month appears as soon as a record is saved in it, and disappears when its last record is deleted.
+  - Expected income still to come this month (with a one-click **Received** button), payment-method summary and recent activity
+- **Month dropdown built from the database.** Today it shows only _October 2026_. A month appears as soon as a record is saved in it, and disappears when its last record is deleted.
 - **Due date and actual date** on every income (Due Date + Actual Received Date) and expense (Due Date + Actual Paid Date). The due date decides the month; the actual date fills in automatically when you mark it Received / Paid.
-- **Upcoming Income feeds Income:** marking an upcoming income **Received** adds it to the Income page (and so to the dashboard totals); changing it back removes it again.
+- **Income is Expected or Received.** Upcoming income is simply income with status **Expected** (there is no separate Upcoming page). Mark it **Received** on the Income page or the dashboard when the money arrives; every total updates straight away.
 - **Sync across devices** (GitHub Pages version): your laptop, phone and tablet share the same data through your own private GitHub repository.
-- **Income, Expenses and Upcoming Income pages**, each with:
+- **Income and Expenses pages**, each with:
   - add, edit and delete
   - one-click status change from the status badge
   - search, filters, sorting and pagination
@@ -30,18 +30,18 @@ The React app never reads seed files or keeps budget data in the browser. Every 
 - **Expenses grouped by category with subtotals** (switchable), like the original budget sheet.
 - **Settings › Data Management**: JSON export, JSON import (replaces all data, asks first) and SQLite database backup, plus the full change history.
 - Validation on both client and server, toast notifications, and loading, empty and error states.
-- **Accessibility and theming:** light/dark theme, keyboard-accessible modals and menus, and statuses shown with an icon *and* text.
+- **Accessibility and theming:** light/dark theme, keyboard-accessible modals and menus, and statuses shown with an icon _and_ text.
 - **Responsive from 320px to 1920px.** Tables become cards on phones, and the page never scrolls sideways.
 - **Audit log:** a record of every create, update, status change, delete and import.
 
 ## 2. Technology stack
 
-| Layer    | Technology |
-|----------|------------|
+| Layer    | Technology                                                                                                                                              |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Frontend | React 19, Vite, React Router, Bootstrap 5 + React-Bootstrap, SCSS, Chart.js (react-chartjs-2), React Icons, React-Toastify, sql.js (GitHub Pages build) |
-| Backend  | Node.js (≥ 20), Express 5, Helmet, CORS, dotenv |
-| Database | SQLite via better-sqlite3 (repository pattern, ready to swap for PostgreSQL/MySQL) |
-| Tooling  | npm workspaces, ESLint, Prettier, Node test runner |
+| Backend  | Node.js (≥ 20), Express 5, Helmet, CORS, dotenv                                                                                                         |
+| Database | SQLite via better-sqlite3 (repository pattern, ready to swap for PostgreSQL/MySQL)                                                                      |
+| Tooling  | npm workspaces, ESLint, Prettier, Node test runner                                                                                                      |
 
 ## 3. Folder structure
 
@@ -77,7 +77,7 @@ budget-manager/
     ├── index.html, vite.config.js (dev proxy /api → :5000)
     └── src/
         ├── main.jsx, App.jsx    bootstrapping, providers, routes
-        ├── pages/               Dashboard, Income, Expenses, UpcomingIncome, Settings, NotFound
+        ├── pages/               Dashboard, Income, Expenses, Settings, NotFound
         ├── components/
         │   ├── layout/          AppHeader (navigation), AppFooter, AppLayout
         │   ├── common/          StatusBadge, StatusMenu, ConfirmDialog, StatCard, MonthSelector, ...
@@ -87,7 +87,6 @@ budget-manager/
         │   ├── dashboard/       SummaryCards, charts, breakdown, payment methods, activity
         │   ├── income/          useIncomeConfig.js       ← everything specific to Income
         │   ├── expenses/        useExpenseConfig.jsx     ← everything specific to Expenses
-        │   ├── upcoming-income/ useUpcomingIncomeConfig.js
         │   └── settings/        export / import / backup cards
         ├── context/             BudgetContext (month, lookups, refresh), ThemeContext
         ├── hooks/               useApiData, useTableState, useSelection, useRecordActions, ...
@@ -100,21 +99,20 @@ budget-manager/
 
 ### Where do I find...?
 
-| I want to change...                   | Look in |
-|---------------------------------------|---------|
-| The dashboard layout                  | `client/src/pages/Dashboard.jsx`, `client/src/components/dashboard/` |
-| Dashboard numbers / formulas          | `server/src/services/dashboardService.js`, `server/src/repositories/dashboardRepository.js` |
-| Income page columns, filters, form    | `client/src/components/income/useIncomeConfig.js` |
-| Expense page columns, filters, form   | `client/src/components/expenses/useExpenseConfig.jsx` |
-| Upcoming income page                  | `client/src/components/upcoming-income/useUpcomingIncomeConfig.js` |
-| Behaviour shared by all record pages  | `client/src/components/common/records/RecordManager.jsx` |
-| API endpoints                         | `server/src/routes/index.js` |
-| SQL queries                           | `server/src/repositories/` |
-| Validation rules                      | Server: `server/src/validators/` · Client: `client/src/utils/validation.js` |
-| Statuses / expense types              | `server/src/constants/index.js` (+ badge look in `client/src/constants/index.js`) |
-| Colours, spacing, fonts               | `client/src/styles/_variables.scss` |
-| Currency / date formatting            | `client/src/utils/formatters.js` |
-| Navigation links                      | `client/src/components/layout/AppHeader.jsx` (`NAV_ITEMS`) |
+| I want to change...                  | Look in                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| The dashboard layout                 | `client/src/pages/Dashboard.jsx`, `client/src/components/dashboard/`                        |
+| Dashboard numbers / formulas         | `server/src/services/dashboardService.js`, `server/src/repositories/dashboardRepository.js` |
+| Income page columns, filters, form   | `client/src/components/income/useIncomeConfig.js`                                           |
+| Expense page columns, filters, form  | `client/src/components/expenses/useExpenseConfig.jsx`                                       |
+| Behaviour shared by all record pages | `client/src/components/common/records/RecordManager.jsx`                                    |
+| API endpoints                        | `server/src/routes/index.js`                                                                |
+| SQL queries                          | `server/src/repositories/`                                                                  |
+| Validation rules                     | Server: `server/src/validators/` · Client: `client/src/utils/validation.js`                 |
+| Statuses / expense types             | `server/src/constants/index.js` (+ badge look in `client/src/constants/index.js`)           |
+| Colours, spacing, fonts              | `client/src/styles/_variables.scss`                                                         |
+| Currency / date formatting           | `client/src/utils/formatters.js`                                                            |
+| Navigation links                     | `client/src/components/layout/AppHeader.jsx` (`NAV_ITEMS`)                                  |
 
 ## 4. Installation
 
@@ -133,18 +131,18 @@ This installs the root, `server` and `client` workspaces in one go.
 cp server/.env.example server/.env      # Windows PowerShell: Copy-Item server/.env.example server/.env
 ```
 
-| Variable        | Default                     | Meaning |
-|-----------------|-----------------------------|---------|
-| `PORT`          | `5000`                      | API port |
-| `DATABASE_PATH` | `./database/budget.sqlite`  | SQLite file (relative to the project root) |
-| `BACKUP_DIR`    | `./database/backups`        | Where "Backup Database" writes copies |
-| `CORS_ORIGIN`   | `http://localhost:5173`     | Comma-separated browser origins allowed to call the API |
-| `SEED_ON_EMPTY` | `true`                      | Load seed data automatically when the database is empty |
-| `SEED_FILE`     | `./database/seed.private.json` | Private seed file with your real data (git-ignored). If missing, fictional sample data is used |
-| `NODE_ENV`      | `development`               | `development` logs each API request |
-| `APP_PASSWORD`  | *(empty)*                   | Sign-in password. **Required in production** (the server refuses to start without it). Empty = no login, for local use only |
-| `SESSION_SECRET`| *(random per start)*        | Signs the session cookie. Set a long random value in production so restarts don't sign you out |
-| `SESSION_MAX_AGE_HOURS` | `12`                | How long a sign-in lasts |
+| Variable                | Default                        | Meaning                                                                                                                     |
+| ----------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                  | `5000`                         | API port                                                                                                                    |
+| `DATABASE_PATH`         | `./database/budget.sqlite`     | SQLite file (relative to the project root)                                                                                  |
+| `BACKUP_DIR`            | `./database/backups`           | Where "Backup Database" writes copies                                                                                       |
+| `CORS_ORIGIN`           | `http://localhost:5173`        | Comma-separated browser origins allowed to call the API                                                                     |
+| `SEED_ON_EMPTY`         | `true`                         | Load seed data automatically when the database is empty                                                                     |
+| `SEED_FILE`             | `./database/seed.private.json` | Private seed file with your real data (git-ignored). If missing, fictional sample data is used                              |
+| `NODE_ENV`              | `development`                  | `development` logs each API request                                                                                         |
+| `APP_PASSWORD`          | _(empty)_                      | Sign-in password. **Required in production** (the server refuses to start without it). Empty = no login, for local use only |
+| `SESSION_SECRET`        | _(random per start)_           | Signs the session cookie. Set a long random value in production so restarts don't sign you out                              |
+| `SESSION_MAX_AGE_HOURS` | `12`                           | How long a sign-in lasts                                                                                                    |
 
 The `.env` file is git-ignored. The frontend holds no secrets. In development, Vite proxies `/api` to the server, so the browser makes same-origin calls.
 
@@ -162,21 +160,20 @@ npm run seed:reset    # REPLACE all budget data with the seed data
 
 **Schema** (`server/src/database/migrations/001_initial_schema.sql`):
 
-| Table             | Purpose |
-|-------------------|---------|
-| `users`           | Owner profile (Ramesh Nerella); ready for multiple users |
-| `months`          | Months that have data — the month dropdown is read from here |
-| `categories`      | Property & Savings, Interest & Finance, Household & Personal, Additional / One-Time |
-| `payment_methods` | Phone Pay, UPI, Cash, Bank Transfer, Card, Other |
-| `income`          | Due date, actual received date, source, amount, purpose, status (Received/Pending), payment method, reference, notes |
+| Table             | Purpose                                                                                                                                                                                                   |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `users`           | Owner profile (Ramesh Nerella); ready for multiple users                                                                                                                                                  |
+| `months`          | Months that have data — the month dropdown is read from here                                                                                                                                              |
+| `categories`      | Property & Savings, Interest & Finance, Household & Personal, Additional / One-Time                                                                                                                       |
+| `payment_methods` | Phone Pay, UPI, Cash, Bank Transfer, Card, Other                                                                                                                                                          |
+| `income`          | Due date, actual received date, source, amount, purpose, status (Expected/Received), payment method, reference, notes                                                                                     |
 | `expenses`        | Due date, actual paid date, category, payee, amount, purpose, type (Regular/Additional), payment method, reference, end date of the commitment (e.g. 2038, Nov-2027), status (Paid/Pending/Closed), notes |
-| `upcoming_income` | Month, optional expected date, source, amount, purpose, status (Expected/Pending/Received), notes, link to the income record created when it was marked Received |
-| `audit_logs`      | Created / Updated / Status Changed / Deleted / Imported history |
+| `audit_logs`      | Created / Updated / Status Changed / Deleted / Imported history                                                                                                                                           |
 
 - Money is stored as **integer paise**, so totals are exact. The API always works in rupees.
 - Dates are `YYYY-MM-DD`; months are `YYYY-MM`. A record belongs to the month of its **due date**.
 - **Actual dates follow the status.** The Received / Paid date can only be set when the status is Received (income) or Paid/Closed (expense). Changing the status from the badge or bulk actions fills it with today, or clears it.
-- **Upcoming → Income:** `server/src/services/upcomingIncomeSync.js` creates, updates or removes the linked income record whenever an upcoming income's status or details change.
+- **Upcoming income = income with status Expected.** Migration `003_expected_income_replaces_upcoming.sql` turned income _Pending_ into _Expected_ and moved the old `upcoming_income` rows into `income`. Rows already in Income were skipped: linked ones, and ones with the same month, source and amount as one income record or as all of them together.
 - Every table has `created_at`, and record tables have `updated_at`, which changes on every edit or status change.
 - Indexes cover month, date, status, category and payment method.
 - **No totals are stored.** They are calculated from records on each request.
@@ -185,29 +182,29 @@ npm run seed:reset    # REPLACE all budget data with the seed data
 
 This repository is public, so **real budget data is never committed**. Seeding picks its file like this:
 
-| File | Committed? | Used when |
-|------|-----------|-----------|
+| File                                                      | Committed?                                                              | Used when                                                               |
+| --------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `database/seed.private.json` (or the path in `SEED_FILE`) | **No** — git-ignored (`*.private.json`) and excluded from Docker images | It exists. This holds your real October 2026 data from the budget sheet |
-| `server/src/database/seed-data/sample-data.json` | Yes | No private file exists. **Fictional** demo data, also used by the tests |
+| `server/src/database/seed-data/sample-data.json`          | Yes                                                                     | No private file exists. **Fictional** demo data, also used by the tests |
 
 Both files use the export format, so either one can also be loaded with **Settings › Import Data**.
 That is how real data gets onto a deployed site: deployments start empty (`SEED_ON_EMPTY=false` in the Dockerfile), and you import the file after signing in.
 
 To create a private seed file on a new computer:
+
 1. Run the app with your data.
 2. Use Settings › Export Data.
 3. Save the file as `database/seed.private.json`.
 
 Fictional sample data totals (October 2026):
 
-| | |
-|---|---|
-| Total income | ₹91,000 (received ₹85,000 · pending ₹6,000) |
-| Total expenses | ₹54,200 (all paid) — Property & Savings ₹38,000 · Interest & Finance ₹6,500 · Household & Personal ₹6,200 · Additional ₹3,500 |
-| Regular commitments | ₹50,700 |
-| Available balance (received − paid) | ₹30,800 |
-| Potential balance (total income − total expenses) | ₹36,800 |
-| Upcoming income | ₹12,000 (Freelance Project ₹9,000 Pending · Loan Interest ₹3,000 Expected) |
+|                                                   |                                                                                                                               |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Total income                                      | ₹1,03,000 (received ₹85,000 · expected ₹18,000: House Rent ₹6,000, Freelance Project ₹9,000, Loan Interest ₹3,000)            |
+| Total expenses                                    | ₹54,200 (all paid) — Property & Savings ₹38,000 · Interest & Finance ₹6,500 · Household & Personal ₹6,200 · Additional ₹3,500 |
+| Regular commitments                               | ₹50,700                                                                                                                       |
+| Available balance (received − paid)               | ₹30,800                                                                                                                       |
+| Potential balance (total income − total expenses) | ₹48,800                                                                                                                       |
 
 ## 7. Running the application
 
@@ -235,48 +232,45 @@ All endpoints are under `/api`. Success responses are `{ "data": ... }`.
 Errors are `{ "error": { "code", "message", "details?" } }`, where `details` maps field names to messages.
 Status codes: `200` OK, `201` created, `400` validation, `404` not found, `413` too large, `500` server/database error. Raw database errors are never returned.
 
-| Method | Endpoint | Body | Description |
-|--------|----------|------|-------------|
-| GET | `/health` | | Health check |
-| GET | `/meta` | | Owner, categories, payment methods, statuses, expense types |
-| GET | `/months` | | Months with data, e.g. `["2026-10"]` |
-| GET | `/dashboard?month=2026-10` | | `summary`, `counts`, `categoryBreakdown`, `paymentMethodSummary` |
-| GET | `/activity?limit=50` | | Audit log, newest first |
-| GET | `/income?month=2026-10` | | Income records for a month |
-| GET | `/income/:id` | | One record |
-| POST | `/income` | income | Create |
-| PUT | `/income/:id` | income | Full update |
-| PATCH | `/income/:id/status` | `{ "status": "Received" }` | Change status only |
-| DELETE | `/income/:id` | | Delete |
-| POST | `/income/bulk-status` | `{ "ids": [1,2], "status": "Received" }` | Bulk status (one transaction) |
-| POST | `/income/bulk-delete` | `{ "ids": [1,2] }` | Bulk delete (one transaction) |
-| … | `/expenses…` | expense | Same 8 endpoints as income |
-| … | `/upcoming-income…` | upcoming income | Same 8 endpoints as income |
-| GET | `/data/export` | | Full JSON export (downloadable file) |
-| POST | `/data/import` | export file | Replace ALL budget data (validated first; all-or-nothing) |
-| POST | `/data/backup` | | Copy the SQLite file into `BACKUP_DIR` (safe while running) |
+| Method | Endpoint                   | Body                                     | Description                                                      |
+| ------ | -------------------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| GET    | `/health`                  |                                          | Health check                                                     |
+| GET    | `/meta`                    |                                          | Owner, categories, payment methods, statuses, expense types      |
+| GET    | `/months`                  |                                          | Months with data, e.g. `["2026-10"]`                             |
+| GET    | `/dashboard?month=2026-10` |                                          | `summary`, `counts`, `categoryBreakdown`, `paymentMethodSummary` |
+| GET    | `/activity?limit=50`       |                                          | Audit log, newest first                                          |
+| GET    | `/income?month=2026-10`    |                                          | Income records for a month                                       |
+| GET    | `/income/:id`              |                                          | One record                                                       |
+| POST   | `/income`                  | income                                   | Create                                                           |
+| PUT    | `/income/:id`              | income                                   | Full update                                                      |
+| PATCH  | `/income/:id/status`       | `{ "status": "Received" }`               | Change status only                                               |
+| DELETE | `/income/:id`              |                                          | Delete                                                           |
+| POST   | `/income/bulk-status`      | `{ "ids": [1,2], "status": "Received" }` | Bulk status (one transaction)                                    |
+| POST   | `/income/bulk-delete`      | `{ "ids": [1,2] }`                       | Bulk delete (one transaction)                                    |
+| …      | `/expenses…`               | expense                                  | Same 8 endpoints as income                                       |
+| GET    | `/data/export`             |                                          | Full JSON export (downloadable file)                             |
+| POST   | `/data/import`             | export file                              | Replace ALL budget data (validated first; all-or-nothing)        |
+| POST   | `/data/backup`             |                                          | Copy the SQLite file into `BACKUP_DIR` (safe while running)      |
 
 **Record bodies** (`*` = required):
 
 ```jsonc
 // income
-{ "dueDate*": "2026-10-25", "receivedDate": null, "source*": "House Rent", "amount*": 6000, "status*": "Pending",
+{ "dueDate*": "2026-10-25", "receivedDate": null, "source*": "House Rent", "amount*": 6000, "status*": "Expected",
   "paymentMethodId": 2, "purpose": null, "reference": null, "notes": null }
 
 // expense
 { "dueDate*": "2026-10-05", "paidDate": "2026-10-05", "categoryId*": 1, "payee*": "Home Loan EMI", "amount*": 30000,
   "expenseType*": "Regular", "paymentMethodId*": 1, "status*": "Paid",
   "purpose": "Home loan", "reference": "Loan Account", "endPeriod": "2040", "notes": null }
-
-// upcoming income (expectedDate, if given, must be inside month)
-{ "month*": "2026-10", "source*": "Loan Interest", "amount*": 3000, "status*": "Expected",
-  "expectedDate": null, "purpose": null, "notes": null }
 ```
 
 Validation: amount > 0 (max 2 decimals); real calendar dates; text ≤ 200 characters (notes ≤ 1000); statuses and types must be allowed values; category and payment method must exist; `receivedDate` only with status Received, `paidDate` only with Paid or Closed.
 
-Upcoming income responses include `incomeId`: the income record created when it was marked Received (otherwise `null`).
-Export files are format **version 2** (with `dueDate`, `receivedDate` / `paidDate`, and `incomeIndex` for those links). Version 1 files, where `date` was the only date, still import, with `date` used as the due date.
+Export files are format **version 3**: income and expenses only, each with `dueDate` and `receivedDate` / `paidDate`. Older files still import:
+
+- version 1 (`date` only): `date` is used as the due date;
+- versions 1–2: income _Pending_ becomes _Expected_, and their `upcomingIncome` list becomes Expected income, with entries already in Income skipped as in the migration above.
 
 Example:
 
@@ -294,25 +288,26 @@ npm run format  # Prettier
 ```
 
 The tests cover:
+
 - seed totals, the month list and the breakdowns
-- House Rent Pending → Received updating the dashboard
+- House Rent Expected → Received updating the dashboard; only Expected/Received allowed
 - full CRUD
 - validation errors
 - months appearing and disappearing
 - expense Paid → Pending → Closed
 - bulk status and bulk delete
-- upcoming income status changes
-- export/import round trip, rejected imports, the audit trail and JSON errors
+- expected income bulk-marked Received and back
+- export/import round trip, importing older files (upcoming income → Expected income), rejected imports, the audit trail and JSON errors
 
 **Manual checklist** (run `npm run dev`):
 
-1. The dashboard shows *October 2026* only, with totals as in section 6.
-2. Income → find a **Pending** House Rent → click its badge → **Received**. A toast appears, the summary shows Pending ₹0, and on the dashboard Pending Income drops and Available Balance rises by that amount. No reload is needed.
-3. Edit the same record (pencil icon) → set the status back to Pending → Save.
+1. The dashboard shows _October 2026_ only, with totals as in section 6.
+2. Income → find the **Expected** House Rent → click its badge → **Received**. A toast appears, the summary's Expected total drops, and on the dashboard Expected Income drops and Available Balance rises by that amount. No reload is needed. (The dashboard's Expected Income panel has the same **Received** button.)
+3. Edit the same record (pencil icon) → set the status back to Expected → Save.
 4. Expenses → change one expense to Pending, then Closed, and check the dashboard's Pending Expenses.
 5. Tick several rows → **Change Status** / **Delete Selected**. A confirmation appears first.
 6. Add Expense → Save with empty fields to see the validation messages.
-7. Add an income dated in November 2026: *November 2026* appears in the month dropdown. Delete it and the month disappears again.
+7. Add an income dated in November 2026: _November 2026_ appears in the month dropdown. Delete it and the month disappears again.
 8. Try search, every filter, column sorting, and the "Group by category" switch.
 9. Settings → Export, Import (with the exported file) and Backup.
 10. Resize to a phone width (320–425px): cards replace tables, filters fold under **Filters**, the menu collapses, and nothing scrolls sideways.
@@ -320,6 +315,7 @@ The tests cover:
 ## 10. How to add a new feature
 
 **Add a field to expenses** (e.g. "Account Holder"):
+
 1. Add a migration `server/src/database/migrations/002_add_account_holder.sql`:
    `ALTER TABLE expenses ADD COLUMN account_holder TEXT;`
 2. `server/src/repositories/expenseRepository.js`: add the column to `SELECT_EXPENSE`, `toExpense`, `toRowParams`, `create` and `update`.
@@ -328,16 +324,19 @@ The tests cover:
 5. `client/src/components/expenses/useExpenseConfig.jsx`: add a form field, a column (`textColumn(...)`), and include it in `toFormValues` / `toPayload`.
 
 **Add a status** (e.g. expense "Partially Paid"):
+
 1. Add it to `server/src/constants/index.js`.
 2. Add a migration that updates the table's CHECK constraint. SQLite needs a table rebuild for this; follow the standard "create new table → copy → rename" pattern.
 3. Add its badge icon/tone in `STATUS_APPEARANCE` (`client/src/constants/index.js`).
 
 **Add a page:**
+
 1. Create `client/src/pages/Reports.jsx`.
 2. Add a `<Route>` in `App.jsx` and an entry in `NAV_ITEMS` (`AppHeader.jsx`).
 3. Put API calls in a new `client/src/services/*Service.js`, and the endpoint in `server/src/routes/index.js` → controller → service → repository.
 
 **Add a new record type** (e.g. savings goals): follow how income is built.
+
 - Server: a repository, a validator, `createRecordService({...})`, `createRecordController(service)`, and `router.use('/savings', createRecordRouter(controller))`.
 - Client: `createRecordService('/savings')`, a `useSavingsConfig` hook, and a page that renders `<RecordManager config={config} />`.
 
@@ -354,15 +353,15 @@ The tests cover:
 
 `client/src/styles/main.scss` imports small partials. Bootstrap handles layout, grid and utilities; the SCSS handles the app's own look.
 
-| File | Contents |
-|------|----------|
-| `_variables.scss` | Typography, spacing, radius, breakpoints, light & dark colour maps |
-| `_mixins.scss` | `media-up`, `media-down`, `surface-card`, `focus-ring`, `tone` |
-| `_theme.scss` | Emits `--app-*` CSS variables and maps Bootstrap to them |
-| `_base.scss`, `_layout.scss` | Elements, header, navigation, page header, footer |
-| `_buttons.scss`, `_cards.scss`, `_forms.scss`, `_badges.scss` | Components |
-| `_tables.scss` | Tables, mobile cards, filter bar, bulk bar, groups, pagination |
-| `_charts.scss`, `_components.scss`, `_responsive.scss` | Charts, states/modals/toasts, small-screen tweaks |
+| File                                                          | Contents                                                           |
+| ------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `_variables.scss`                                             | Typography, spacing, radius, breakpoints, light & dark colour maps |
+| `_mixins.scss`                                                | `media-up`, `media-down`, `surface-card`, `focus-ring`, `tone`     |
+| `_theme.scss`                                                 | Emits `--app-*` CSS variables and maps Bootstrap to them           |
+| `_base.scss`, `_layout.scss`                                  | Elements, header, navigation, page header, footer                  |
+| `_buttons.scss`, `_cards.scss`, `_forms.scss`, `_badges.scss` | Components                                                         |
+| `_tables.scss`                                                | Tables, mobile cards, filter bar, bulk bar, groups, pagination     |
+| `_charts.scss`, `_components.scss`, `_responsive.scss`        | Charts, states/modals/toasts, small-screen tweaks                  |
 
 Chart colours are `--app-chart-1…4` and have been checked for colour-blind separation in both themes.
 
@@ -375,6 +374,7 @@ Chart colours are `--app-chart-1…4` and have been checked for colour-blind sep
 - Before a risky change, use **Settings › Backup Database** (or copy `database/budget.sqlite`).
 
 **Moving to PostgreSQL/MySQL:**
+
 1. Replace `server/src/database/connection.js` and the SQL in `server/src/repositories/`.
 2. Make the repository methods `async`, and `await` them in `createRecordService.js`, `dashboardService.js` and `dataService.js`.
 
@@ -388,12 +388,14 @@ Controllers, routes, validators and the whole frontend stay the same.
 
 GitHub Pages only hosts static files, so this build (`npm run build:pages`) runs the **same SQLite database and the same server code inside the browser**.
 `client/src/local-backend/` answers the API calls; nothing is rewritten:
+
 - `localApi.js`: the API routes. They call the unchanged services, validators and repositories from `server/src`, bundled into the page.
 - `sqliteAdapter.js`: lets sql.js (SQLite compiled to WebAssembly) behave like better-sqlite3.
 - `browserDatabase.js` / `browserStorage.js`: open the database, apply the same `migrations/*.sql`, and save it in IndexedDB.
 - `shims/`: browser stand-ins for the three Node-only server modules. `client/vite.config.js` swaps them in for the Pages build only.
 
 What this means for you:
+
 - **Your data stays on your device.** It is saved in the browser's storage and never uploaded, so the public site has no login and no personal data.
 - **First use:** open the site, go to **Settings › Import Data**, and choose `database/seed.private.json` (or any export file).
 - **Each browser starts with its own copy.** To share one budget across your laptop, phone and tablet, turn on **Sync across devices** (below). Otherwise use Export and Import, and export regularly; clearing the site's browser data deletes it.
@@ -403,16 +405,18 @@ What this means for you:
 Free, and the data goes only to your own **private** repository; the app refuses to sync to a public one.
 
 One-time setup (the steps are also shown in **Settings › Sync across devices**):
+
 1. Create a **private** repository named `budget-manager-data` (https://github.com/new).
 2. Create a fine-grained access token (https://github.com/settings/personal-access-tokens/new):
-   - Repository access: *Only select repositories* → `budget-manager-data`
-   - Permissions: *Contents: Read and write*
+   - Repository access: _Only select repositories_ → `budget-manager-data`
+   - Permissions: _Contents: Read and write_
 3. On each device, open Settings › Sync across devices, enter `Rameshneralla/budget-manager-data` and the token, then click **Connect this device**.
    - The first device uploads its data.
    - Each further device downloads it.
    - If both already have data, you choose which copy to keep.
 
 How it works (`client/src/local-backend/sync/`):
+
 - The whole SQLite file is stored as `budget.sqlite` in that repository, so ids, history and links are identical on every device.
 - Every change downloads the latest copy if needed, applies the change, and uploads it. If another device uploaded in between, the change is re-applied on top of that copy.
 - Opening the app, or returning to it, downloads changes from other devices.
@@ -434,12 +438,13 @@ The first time, enable Pages in GitHub: **Settings › Pages › Build and deplo
 RBM can be installed on phones, tablets and laptops straight from the website, with no Play Store or App Store.
 After installing, it opens in its own window with the round **RBM** icon and works offline.
 
-| Device | How |
-|--------|-----|
-| Android, Windows, macOS, ChromeOS (Chrome, Edge, Samsung Internet) | An **Install RBM app** card appears; or use the ⤓ button in the header |
-| iPhone / iPad (Safari) | The card shows the steps: **Share → Add to Home Screen** (Apple allows no install pop-up) |
+| Device                                                             | How                                                                                       |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| Android, Windows, macOS, ChromeOS (Chrome, Edge, Samsung Internet) | An **Install RBM app** card appears; or use the ⤓ button in the header                    |
+| iPhone / iPad (Safari)                                             | The card shows the steps: **Share → Add to Home Screen** (Apple allows no install pop-up) |
 
 Files:
+
 - `client/public/manifest.webmanifest`: app name, colours and icons.
 - `client/public/sw.js`: service worker, required for installing. It keeps offline copies of the app files; budget data is never cached.
 - `client/src/pwa/installApp.js`, `components/common/InstallApp.jsx`: the install button and card. "Not now" hides the card for 14 days.
@@ -458,6 +463,7 @@ npm run preview:pages -w client    # http://localhost:4173/budget-manager/
 ### Login
 
 Set `APP_PASSWORD` in `server/.env` to require a password. How it works:
+
 - The password is checked on the server (`server/src/services/authService.js`) and is never stored in the database.
 - A successful sign-in sets a signed, `httpOnly`, `SameSite=Strict` cookie (and `Secure` in production).
 - Every API route except `/api/health` and `/api/auth/*` requires that cookie (`server/src/middleware/requireAuth.js`).
@@ -465,11 +471,11 @@ Set `APP_PASSWORD` in `server/.env` to require a password. How it works:
 
 Auth endpoints:
 
-| Method | Endpoint | Body | Description |
-|--------|----------|------|-------------|
-| GET | `/auth/session` | | `{ authRequired, authenticated }` |
-| POST | `/auth/login` | `{ "password": "..." }` | Signs in (sets the cookie); `401` wrong password, `429` too many attempts |
-| POST | `/auth/logout` | | Signs out |
+| Method | Endpoint        | Body                    | Description                                                               |
+| ------ | --------------- | ----------------------- | ------------------------------------------------------------------------- |
+| GET    | `/auth/session` |                         | `{ authRequired, authenticated }`                                         |
+| POST   | `/auth/login`   | `{ "password": "..." }` | Signs in (sets the cookie); `401` wrong password, `429` too many attempts |
+| POST   | `/auth/logout`  |                         | Signs out                                                                 |
 
 On the client, `AuthContext.jsx` shows `pages/LoginPage.jsx` until signed in, and returns to it if the session expires. The sign-out button is in the header.
 
@@ -490,10 +496,10 @@ The `Dockerfile` builds the client and runs the API, which serves the app on one
 The database is stored in **`/data`**, so attach a **persistent volume at `/data`**; without one, all data is lost on every redeploy.
 Set these variables on the host:
 
-| Variable | Value |
-|----------|-------|
-| `APP_PASSWORD` | your sign-in password (required) |
-| `SESSION_SECRET` | long random string |
+| Variable         | Value                            |
+| ---------------- | -------------------------------- |
+| `APP_PASSWORD`   | your sign-in password (required) |
+| `SESSION_SECRET` | long random string               |
 
 `PORT`, `DATABASE_PATH=/data/budget.sqlite` and `BACKUP_DIR=/data/backups` are preset in the image; Railway/Render override `PORT` automatically.
 The live database starts **empty**, because no personal data is in the repository or the image. After the first sign-in, go to **Settings › Import Data** and choose your `database/seed.private.json` (or any export file).
@@ -510,7 +516,7 @@ railway variables --set "APP_PASSWORD=..." --set "SESSION_SECRET=..."
 railway domain                        # generates the public https URL
 ```
 
-**Render:** create a *Web Service* from the GitHub repo with runtime *Docker*, add a *Disk* mounted at `/data` (paid plans only; the free plan's storage is wiped on restart), and set the variables.
+**Render:** create a _Web Service_ from the GitHub repo with runtime _Docker_, add a _Disk_ mounted at `/data` (paid plans only; the free plan's storage is wiped on restart), and set the variables.
 
 **Fly.io:**
 
@@ -526,6 +532,7 @@ Back up regularly with Settings › Backup Database (written to `/data/backups`)
 ## 15. Ready for later
 
 The structure leaves room for these without restructuring:
+
 - multiple users (`users` table; login is in `authService.js`)
 - PostgreSQL
 - CSV/Excel/PDF export (`dataService`)

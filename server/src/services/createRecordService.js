@@ -1,5 +1,5 @@
 /**
- * Builds the standard service for a record type (income, expense, upcoming income).
+ * Builds the standard service for a record type (income, expense).
  *
  * Every record type supports the same operations - list by month, get, create,
  * update, delete, change status, bulk status and bulk delete - so the workflow
